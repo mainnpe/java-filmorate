@@ -15,40 +15,40 @@ import java.util.*;
 public class FilmController {
     public static final LocalDate EARLIEST_RELEASE_DATE =
             LocalDate.of(1895, Month.DECEMBER, 28);
-    Map<Integer, Film> films = new HashMap<>();
+    private Map<Integer, Film> films = new HashMap<>();
     private int filmUniqueId = 1;
 
     @GetMapping
     public Collection<Film> findAllFilms() {
-        log.info("Количество фильмов - " + films.size());
+        log.info("Количество фильмов - {}", films.size());
         return films.values();
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addFilm(@RequestBody Film film) throws ValidationException {
         if (!validate(film)) {
             log.warn("Ошибка при создании фильма");
             throw new ValidationException("Ошибка при создании фильма");
         }
         film.setId(filmUniqueId++);
         films.put(film.getId(), film);
-        log.info("Добавлен фильм - "+ film);
+        log.info("Добавлен фильм - {}", film);
         return film;
     }
 
     @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
+    public Film updateFilm(@RequestBody Film film) throws ValidationException {
         if (!validate(film)) {
             log.warn("Ошибка при обновлении информации о фильме");
             throw new ValidationException("Ошибка при обновлении информации о фильме");
         }
         if(!films.containsKey(film.getId())) {
-            log.warn("Информации о фильме " + film + " не существует.");
+            log.warn("Информации о фильме {} не существует", film);
             throw new ValidationException("Ошибка при обновлении информации " +
                     "о фильме.");
         }
         films.put(film.getId(), film);
-        log.info("Обновлена информация о фильме - "+ film);
+        log.info("Обновлена информация о фильме - {}", film);
         return film;
     }
 

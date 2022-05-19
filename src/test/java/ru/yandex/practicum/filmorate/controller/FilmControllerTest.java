@@ -22,7 +22,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void test1_addValidFilm() {
+    void test1_addValidFilm() throws ValidationException {
         //Given
         Film film = new Film(1, "film1", "film description",
                 LocalDate.of(2017, 1, 1), 1);
@@ -43,7 +43,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void test1_updateValidFilm() {
+    void test1_updateValidFilm() throws ValidationException {
         //Given
         Film film = new Film(1, "film1", "film description",
                 LocalDate.of(2017, 1, 1), 1);

@@ -21,7 +21,7 @@ class UserControllerTest {
     }
 
     @Test
-    void test1_addValidUser() {
+    void test1_addValidUser() throws ValidationException {
         //Given
         User user = new User(1, "email@email.com",
                 "login", "name", LocalDate.of(2000,1,1));
@@ -40,7 +40,7 @@ class UserControllerTest {
     }
 
     @Test
-    void test2_updateValidUser() {
+    void test2_updateValidUser() throws ValidationException {
         //Given
         User user = new User(1, "email@email.com",
                 "login", "name", LocalDate.of(2000,1,1));

@@ -12,18 +12,18 @@ import java.util.*;
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-    Map<Integer, User> users = new HashMap<>();
+    private Map<Integer, User> users = new HashMap<>();
     private int userUniqueId = 1;
 
 
     @GetMapping
     public Collection<User> findAllUsers() {
-        log.info("Количество пользователей - " + users.size());
+        log.info("Количество пользователей - {}", users.size());
         return users.values();
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user) {
+    public User addUser(@RequestBody User user) throws ValidationException {
         if (!validate(user)) {
             log.warn("Ошибка при создании пользователя");
             throw new ValidationException("Ошибка при создании пользователя");
@@ -33,24 +33,24 @@ public class UserController {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
-        log.info("Добавлен пользователь - "+ user);
+        log.info("Добавлен пользователь - {}", user);
         return user;
     }
 
     @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@RequestBody User user) throws ValidationException {
         if (!validate(user)) {
             log.warn("Ошибка при обновлении пользователя");
             throw new ValidationException("Ошибка при обновлении информации " +
                     "о пользователе.");
         }
         if(!users.containsKey(user.getId())) {
-            log.warn("Пользователь " + user + " не существует");
+            log.warn("Пользователь {} не существует", user);
             throw new ValidationException("Ошибка при обновлении информации " +
                     "о пользователе.");
         }
         users.put(user.getId(), user);
-        log.info("Обновлена информация о пользователе - "+ user);
+        log.info("Обновлена информация о пользователе - {}", user);
         return user;
     }
 
