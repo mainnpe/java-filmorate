@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service.validator;
 
 import org.slf4j.Logger;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -13,7 +12,7 @@ public class FilmValidators {
     public static final LocalDate EARLIEST_RELEASE_DATE =
             LocalDate.of(1895, Month.DECEMBER, 28);
 
-    public static boolean filmFormatValidator(Film film) {
+    public static boolean validateFormat(Film film) {
         return !(  film.getName().isBlank() //    название не может быть пустым;
                 || film.getDescription().length() > 200 //максимальная длина описания — 200 символов
                 || film.getReleaseDate().isBefore(
@@ -22,8 +21,8 @@ public class FilmValidators {
 
     }
 
-    public static void filmExistsValidator(FilmStorage storage, Integer id,
-                                           String message, Logger log) throws FilmNotFoundException {
+    public static void isExists(FilmStorage storage, Integer id,
+                                String message, Logger log) throws FilmNotFoundException {
         if (storage.findFilm(id) == null) {
             log.warn(message);
             throw new FilmNotFoundException(message);

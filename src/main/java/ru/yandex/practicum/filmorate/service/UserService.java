@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
@@ -15,20 +16,17 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public Collection<User> findAllUsers() {
         return userStorage.findAllUsers();
     }
 
     public User findUser(Integer id) throws UserNotFoundException {
-        UserValidators.userExistsValidator(userStorage, id, String.format(
+        UserValidators.isExists(userStorage, id, String.format(
                     "Пользователь с id = %s не существует.", id), log);
 
         return userStorage.findUser(id);
@@ -36,7 +34,7 @@ public class UserService {
 
 
     public User addUser(User user) throws ValidationException {
-        if (!UserValidators.userFormatValidator(user)) {
+        if (!UserValidators.validateFormat(user)) {
             log.warn("Ошибка при создании пользователя");
             throw new ValidationException("Ошибка при создании пользователя");
         }
@@ -44,12 +42,12 @@ public class UserService {
     }
 
     public User updateUser(User user) throws ValidationException, UserNotFoundException {
-        if (!UserValidators.userFormatValidator(user)) {
+        if (!UserValidators.validateFormat(user)) {
             log.warn("Ошибка при обновлении пользователя");
             throw new ValidationException("Ошибка при обновлении информации " +
                     "о пользователе.");
         }
-        UserValidators.userExistsValidator(userStorage, user.getId(), String.format(
+        UserValidators.isExists(userStorage, user.getId(), String.format(
                 "Пользователь с id = %s не существует.", user.getId()), log);
         /*if(userStorage.findUser(user.getId()) == null) {
             log.warn("Пользователь {} не существует", user);
@@ -61,9 +59,9 @@ public class UserService {
 
     public void addFriend(Integer id, Integer otherId) throws UserNotFoundException {
         // Проверить существование обоих User
-        UserValidators.userExistsValidator(userStorage, id, "Невалидный id пользователя, " +
+        UserValidators.isExists(userStorage, id, "Невалидный id пользователя, " +
                 "направившего заявку на добавление в друзья.", log);
-        UserValidators.userExistsValidator(userStorage, otherId,
+        UserValidators.isExists(userStorage, otherId,
                 String.format("Ошибка при добавлении в друзья. Пользователь с id = %s не существует."
                         , otherId), log);
 
@@ -79,10 +77,10 @@ public class UserService {
 
     public void deleteFriend(Integer id, Integer otherId) throws UserNotFoundException {
         // Проверить существование обоих User
-        UserValidators.userExistsValidator(userStorage, id,
+        UserValidators.isExists(userStorage, id,
                 "Невалидный id пользователя, направившего заявку " +
                         "на удаление из друзей.", log);
-        UserValidators.userExistsValidator(userStorage, otherId,
+        UserValidators.isExists(userStorage, otherId,
                 String.format("Ошибка при удалении. Пользователь с id = %s не существует."
                         , otherId), log);
 
@@ -98,7 +96,7 @@ public class UserService {
 
     public Collection<User> findFriends(Integer id) throws UserNotFoundException {
         // Проверить существование User
-        UserValidators.userExistsValidator(userStorage, id,
+        UserValidators.isExists(userStorage, id,
                 "Пользователь с id = %s не существует.", log);
 
         //Определить список друзей
@@ -110,9 +108,9 @@ public class UserService {
 
     public Collection<User> findCommonFriends(Integer id, Integer otherId) throws UserNotFoundException {
         // Проверить существование обоих User
-        UserValidators.userExistsValidator(userStorage, id, String.format(
+        UserValidators.isExists(userStorage, id, String.format(
                 "Пользователь с id = %s не существует.", otherId), log);
-        UserValidators.userExistsValidator(userStorage, otherId, String.format(
+        UserValidators.isExists(userStorage, otherId, String.format(
                 "Пользователь с id = %s не существует.", otherId), log);
 
         //Определить список id общих друзей

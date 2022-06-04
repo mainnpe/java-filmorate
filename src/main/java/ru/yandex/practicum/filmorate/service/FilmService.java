@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
@@ -17,14 +18,10 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
 
     public FilmStorage getFilmStorage() {
         return filmStorage;
@@ -40,13 +37,13 @@ public class FilmService {
 
 
     public Film findFilm(Integer id) throws FilmNotFoundException {
-        FilmValidators.filmExistsValidator(filmStorage, id, String.format(
+        FilmValidators.isExists(filmStorage, id, String.format(
                 "Фильм с id = %s не существует.", id), log);
         return filmStorage.findFilm(id);
     }
 
     public Film addFilm(Film film) throws ValidationException {
-        if (!FilmValidators.filmFormatValidator(film)) {
+        if (!FilmValidators.validateFormat(film)) {
             log.warn("Ошибка при создании фильма");
             throw new ValidationException("Ошибка при создании фильма");
         }
@@ -54,11 +51,11 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) throws ValidationException, FilmNotFoundException {
-        if (!FilmValidators.filmFormatValidator(film)) {
+        if (!FilmValidators.validateFormat(film)) {
             log.warn("Ошибка при обновлении информации о фильме");
             throw new ValidationException("Ошибка при обновлении информации о фильме");
         }
-        FilmValidators.filmExistsValidator(filmStorage, film.getId(), String.format(
+        FilmValidators.isExists(filmStorage, film.getId(), String.format(
                 "Фильм с id = %s не существует.", film.getId()), log);
         return filmStorage.updateFilm(film);
     }
@@ -66,9 +63,9 @@ public class FilmService {
     public void like(Integer id, Integer userId)
             throws UserNotFoundException, FilmNotFoundException, ValidationException
     {
-        FilmValidators.filmExistsValidator(filmStorage, id,
+        FilmValidators.isExists(filmStorage, id,
                 String.format("Фильм с id = %s не существует.", id), log);
-        UserValidators.userExistsValidator(userStorage, userId, String.format(
+        UserValidators.isExists(userStorage, userId, String.format(
                 "Пользователь с id = %s не существует.", id), log);
 
         final Film film = filmStorage.findFilm(id);
@@ -79,9 +76,9 @@ public class FilmService {
     public void disLike(Integer id, Integer userId)
             throws ValidationException, FilmNotFoundException, UserNotFoundException
     {
-        FilmValidators.filmExistsValidator(filmStorage, id, String.format(
+        FilmValidators.isExists(filmStorage, id, String.format(
                 "Фильм с id = %s не существует.", id), log);
-        UserValidators.userExistsValidator(userStorage, userId, String.format(
+        UserValidators.isExists(userStorage, userId, String.format(
                 "Пользователь с id = %s не существует.", id), log);
 
         final Film film = filmStorage.findFilm(id);

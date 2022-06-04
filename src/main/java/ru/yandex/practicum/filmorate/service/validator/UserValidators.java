@@ -2,15 +2,13 @@ package ru.yandex.practicum.filmorate.service.validator;
 
 import org.slf4j.Logger;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.time.LocalDate;
 
 public class UserValidators {
-    public static boolean userFormatValidator(User user) {
+    public static boolean validateFormat(User user) {
         boolean emailCheck = !user.getEmail().isBlank() && // электронная почта не может быть пустой
                 user.getEmail().contains("@"); // и должна содержать символ @;
         boolean loginCheck = !(user.getLogin().isBlank() || //логин не может быть пустым
@@ -20,8 +18,8 @@ public class UserValidators {
         return emailCheck && loginCheck && birthdayCheck;
     }
 
-    public static void userExistsValidator(UserStorage storage, Integer id,
-                                           String message, Logger log) throws UserNotFoundException {
+    public static void isExists(UserStorage storage, Integer id,
+                                String message, Logger log) throws UserNotFoundException {
         if (storage.findUser(id) == null) {
             log.warn(message);
             throw new UserNotFoundException(message);
