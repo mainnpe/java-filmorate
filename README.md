@@ -4,6 +4,15 @@ ___
 
 Схема БД в виде ER диаграммы представлена [здесь](https://github.com/mainnpe/java-filmorate/blob/main/src/main/resources/ER_diagram.png).
 
+#### Основная информация о таблицах.
+1. **users** - информация о пользователях
+2. **friends** - информация о друзьях пользователя. Поле status: true - если дружба между пользователями подтверждена, false - не подтверждена.
+3. **films** - информация о фильмах
+4. **film_genres** - содержит перечень всех жанров кино
+5. **mpa_age_ratings** - содержит перечень возрастных рейтингов Ассоциации кинокомпаний (Motion Picture Association, сокращённо МРА)
+6. **film_genre_rel** - соотнесение фильма с жанрами.
+7. **film_likes** - перечень лайков, поставленных пользователями фильму.
+
 #### Примеры основных SQL запросов для выгрузки данных о фильмах и пользователях.
 
 
@@ -36,7 +45,7 @@ WHERE id IN (SELECT friend_id
 ```sql
 SELECT *
 FROM users
-WHERE id IN (SELECT friend_id
+WHERE id IN (SELECT DISTINCT friend_id
              FROM friends
              WHERE user_id = ? --id1
                   AND friend_id <> ? --id2
@@ -52,19 +61,19 @@ WHERE id IN (SELECT friend_id
 * Все фильмы:
 
 ```sql
-SELECT f.*, fr.rating_name
+SELECT f.*, mar.rating_name
 FROM films f
-JOIN film_ratings fr
-	ON f.rating_id = fr.rating_id;
+JOIN mpa_age_ratings mar
+	ON f.mpa_rating_id = mar.rating_id;
 ```
 	
 * Фильм с определенным *{id}*:
 
 ```sql
-SELECT f.*, fr.rating_name
+SELECT f.*, mar.rating_name
 FROM films f
-JOIN film_ratings fr
-	ON f.rating_id = fr.rating_id
+JOIN mpa_age_ratings mar
+  ON f.mpa_rating_id = mar.rating_id
 WHERE f.id = ?;
 ```
 
@@ -81,10 +90,10 @@ WHERE fgr.film_id = ?;
 * Список *{N}* самых популярных фильмов:
 
 ```sql
-SELECT f.*, fr.rating_name
+SELECT f.*, mar.rating_name
 FROM films f
-JOIN film_ratings fr
-	ON f.rating_id = fr.rating_id
-ORDER BY likes_amount DESC
+JOIN mpa_age_ratings mar
+  ON f.mpa_rating_id = mar.rating_id
+ORDER BY rate DESC
 LIMIT ?;
 ```
