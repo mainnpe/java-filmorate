@@ -120,10 +120,8 @@ class UserServiceTest {
         final Collection<User> otherUserFriends = service.findFriends(otherUser.getId());
 
         //Then
-        user.addFriend(otherUser.getId());
-        otherUser.addFriend(user.getId());
         List<User> expUserFriends = List.of(otherUser);
-        List<User> expOtherUserFriends = List.of(user);
+        List<User> expOtherUserFriends = List.of();
         assertAll("Проверка списка друзей",
                 () -> assertEquals(expUserFriends, userFriends,
                         String.format("Неверный список друзей пользователя %s", user)),
@@ -185,7 +183,7 @@ class UserServiceTest {
 
         //Then
         List<User> expUserFriends = Collections.EMPTY_LIST;
-        List<User> expOtherUserFriends = Collections.EMPTY_LIST;
+        List<User> expOtherUserFriends = List.of(user);
         assertAll("Проверка списка друзей",
                 () -> assertEquals(expUserFriends, userFriends,
                         String.format("Неверный список друзей пользователя %s", user)),
