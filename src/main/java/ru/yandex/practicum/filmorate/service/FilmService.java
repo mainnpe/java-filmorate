@@ -3,18 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.MPARating;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
+import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,6 +23,9 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FilmGenreDao genreStorage;
+    private final MPARatingDao mpaRatingStorage;
+
 
     public FilmStorage getFilmStorage() {
         return filmStorage;
@@ -61,37 +65,49 @@ public class FilmService {
     }
 
     public void like(Integer id, Integer userId)
-            throws UserNotFoundException, FilmNotFoundException, ValidationException
+            throws UserNotFoundException, FilmNotFoundException
     {
         FilmValidators.isExists(filmStorage, id,
                 String.format("Фильм с id = %s не существует.", id), log);
         UserValidators.isExists(userStorage, userId, String.format(
-                "Пользователь с id = %s не существует.", id), log);
+                "Пользователь с id = %s не существует.", userId), log);
 
-        final Film film = filmStorage.findFilm(id);
-        film.like(userId);
-        filmStorage.updateFilm(film);
+        filmStorage.like(id, userId);
     }
 
     public void disLike(Integer id, Integer userId)
-            throws ValidationException, FilmNotFoundException, UserNotFoundException
+            throws FilmNotFoundException, UserNotFoundException
     {
         FilmValidators.isExists(filmStorage, id, String.format(
                 "Фильм с id = %s не существует.", id), log);
         UserValidators.isExists(userStorage, userId, String.format(
-                "Пользователь с id = %s не существует.", id), log);
+                "Пользователь с id = %s не существует.", userId), log);
 
-        final Film film = filmStorage.findFilm(id);
-        film.disLike(userId);
-        filmStorage.updateFilm(film);
+        filmStorage.disLike(id, userId);
     }
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
-        return filmStorage.findAllFilms().stream()
-                .sorted((o1,o2) -> Integer.compare(o2.getLikes().size(),
-                            o1.getLikes().size())
-                ).limit(count.orElse(10))
-                .collect(Collectors.toList());
+        return filmStorage.findNMostPopularFilms(count);
+    }
+
+    public FilmGenre findGenre(Integer id) throws GenreNotFoundException {
+        FilmValidators.isGenreExists(genreStorage, id, String.format(
+                "Жанр фильма с id = %s не существует.", id), log);
+        return genreStorage.findGenre(id);
+    }
+
+    public Collection<FilmGenre> findAllGenres() {
+        return genreStorage.findAllGenres();
+    }
+
+    public MPARating findRating(Integer id) throws MPARatingNotFoundException {
+        FilmValidators.isMPARatingExists(mpaRatingStorage, id, String.format(
+                "Рейтинга MPA с id = %s не существует.", id), log);
+        return mpaRatingStorage.findRating(id);
+    }
+
+    public Collection<MPARating> findAllRatings() {
+        return mpaRatingStorage.findAllRatings();
     }
 
 }

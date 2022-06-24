@@ -4,9 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -48,5 +47,41 @@ public class InMemoryUserStorage implements UserStorage{
     @Override
     public User findUser(Integer id) {
         return users.get(id);
+    }
+
+    @Override
+    public Collection<User> findFriends(Integer id) {
+        final Set<Integer> friendIds = findUser(id).getFriends();
+        return findAllUsers().stream()
+                .filter(x -> friendIds.contains(x.getId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<User> findCommonFriends(Integer id, Integer otherId) {
+        final User user = findUser(id);
+        final User otherUser = findUser(otherId);
+        Set<Integer> commonIds = new HashSet<>(user.getFriends());
+        commonIds.addAll(otherUser.getFriends());
+
+        return findAllUsers().stream()
+                .filter(x -> commonIds.contains(x.getId()))
+                .filter(x -> !(x.getId() == id
+                        || x.getId() == otherId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addFriend(Integer id, Integer otherId) {
+        final User user = findUser(id);
+        user.addFriend(otherId);
+        updateUser(user);
+    }
+
+    @Override
+    public void deleteFriend(Integer id, Integer otherId) {
+        final User user = findUser(id);
+        user.removeFriend(otherId);
+        updateUser(user);
     }
 }

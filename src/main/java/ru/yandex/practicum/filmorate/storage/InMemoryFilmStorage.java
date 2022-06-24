@@ -2,12 +2,13 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -41,14 +42,32 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
-    public Film updateFilm(Film film) throws ValidationException {
-        if(!films.containsKey(film.getId())) {
-            log.warn("Информации о фильме {} не существует", film);
-            throw new ValidationException("Ошибка при обновлении информации " +
-                    "о фильме.");
-        }
+    public Film updateFilm(Film film){
         films.put(film.getId(), film);
         log.info("Обновлена информация о фильме - {}", film);
         return film;
+    }
+
+    @Override
+    public void like(Integer id, Integer userId) {
+        final Film film = findFilm(id);
+        film.like(userId);
+        updateFilm(film);
+    }
+
+    @Override
+    public void disLike(Integer id, Integer userId) {
+        final Film film = findFilm(id);
+        film.disLike(userId);
+        updateFilm(film);
+    }
+
+    @Override
+    public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
+        return findAllFilms().stream()
+                    .sorted((o1,o2) -> Integer.compare(o2.getLikes().size(),
+                                o1.getLikes().size())
+                    ).limit(count.orElse(10))
+                    .collect(Collectors.toList());
     }
 }

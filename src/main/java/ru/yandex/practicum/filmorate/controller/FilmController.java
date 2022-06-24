@@ -9,8 +9,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.*;
 
 @RestController
@@ -52,9 +50,7 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
-            throws ValidationException,
-                   UserNotFoundException,
-                   FilmNotFoundException
+            throws UserNotFoundException, FilmNotFoundException
     {
         filmService.like(id, userId);
     }
@@ -63,9 +59,7 @@ public class FilmController {
     @DeleteMapping("/{id}/like/{userId}")
     public void disLikeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
-            throws ValidationException,
-                   FilmNotFoundException,
-                   UserNotFoundException
+            throws FilmNotFoundException, UserNotFoundException
     {
         filmService.disLike(id, userId);
     }

@@ -2,58 +2,68 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.MPARating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
+import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
 class FilmServiceTest {
-    FilmService service;
+    private FilmService service;
 
     @BeforeEach
     void beforeEach() {
         service = new FilmService(
                 new InMemoryFilmStorage(),
-                new InMemoryUserStorage()
+                new InMemoryUserStorage(),
+                new FilmGenreDao(new JdbcTemplate()),
+                new MPARatingDao(new JdbcTemplate())
         );
     }
 
+    //    Требования:
     //    название не может быть пустым;
-//    максимальная длина описания — 200 символов;
-//    дата релиза — не раньше 28 декабря 1895 года;
-//    продолжительность фильма должна быть положительной.
+    //    максимальная длина описания — 200 символов;
+    //    дата релиза — не раньше 28 декабря 1895 года;
+    //    продолжительность фильма должна быть положительной.
     @Test
     void test1_addInvalidFilm() {
         //Given
         StringBuilder sb = new StringBuilder();
         Stream.generate(() -> new Random().nextInt(1))
                 .limit(201).forEach(x -> sb.append("a"));
-        Film filmBlankName = new Film(1, " ", "film description",
+        Film filmBlankName = new Film( " ", "film description",
                 LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmEmptyName = new Film(1, "", "film description",
+                , TestConstants.MPA, TestConstants.GENRES);
+        Film filmEmptyName = new Film( "", "film description",
                 LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmExtraLongDescription = new Film(1, "film1", sb.toString(),
+                ,TestConstants.MPA, TestConstants.GENRES);
+        Film filmExtraLongDescription = new Film( "film1", sb.toString(),
                 LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmInvalidRelease = new Film(1, "name", "film description",
+                ,TestConstants.MPA, TestConstants.GENRES);
+        Film filmInvalidRelease = new Film( "name", "film description",
                 FilmValidators.EARLIEST_RELEASE_DATE.minusDays(1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmNegativeDuration = new Film(1, "film1", "film description",
+                ,TestConstants.MPA, TestConstants.GENRES);
+        Film filmNegativeDuration = new Film( "film1", "film description",
                 LocalDate.of(2017, 1, 1), -1
-                ,new HashSet<>(List.of(2,3)));
+                ,TestConstants.MPA, TestConstants.GENRES);
 
 
         //When
@@ -82,21 +92,21 @@ class FilmServiceTest {
         StringBuilder sb = new StringBuilder();
         Stream.generate(() -> new Random().nextInt(1))
                 .limit(201).forEach(x -> sb.append("a"));
-        Film filmBlankName = new Film(1, " ", "film description",
+        Film filmBlankName = new Film( " ", "film description",
                 LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmEmptyName = new Film(1, "", "film description",
+                , TestConstants.MPA, TestConstants.GENRES);
+        Film filmEmptyName = new Film( "", "film description",
                 LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmExtraLongDescription = new Film(1, "film1", sb.toString(),
+                ,TestConstants.MPA, TestConstants.GENRES);
+        Film filmExtraLongDescription = new Film( "film1", sb.toString(),
                 LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmInvalidRelease = new Film(1, "name", "film description",
+                ,TestConstants.MPA, TestConstants.GENRES);
+        Film filmInvalidRelease = new Film( "name", "film description",
                 FilmValidators.EARLIEST_RELEASE_DATE.minusDays(1), 1
-                ,new HashSet<>(List.of(2,3)));
-        Film filmNegativeDuration = new Film(1, "film1", "film description",
+                ,TestConstants.MPA, TestConstants.GENRES);
+        Film filmNegativeDuration = new Film( "film1", "film description",
                 LocalDate.of(2017, 1, 1), -1
-                ,new HashSet<>(List.of(2,3)));
+                ,TestConstants.MPA, TestConstants.GENRES);
 
 
         //When
@@ -123,18 +133,17 @@ class FilmServiceTest {
     void test3_likeFilm() throws ValidationException, UserNotFoundException,
             FilmNotFoundException {
         //Given
-        Film film = new Film(1, "film1", "film description",
-                LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>());
-        User user = new User(1, "email@email.com", "login",
-                "name", LocalDate.of(2000,1,1)
-                , new HashSet<>());
-        service.addFilm(film);
-        service.getUserStorage().addUser(user);
+        Film film = new Film( "film1", "film description",
+                LocalDate.of(1989, Month.JULY, 7),
+                100, TestConstants.MPA, TestConstants.GENRES);
+        User user = new User("mail@mail.ru","dolore",
+                "Nick Name", LocalDate.of(1946, Month.AUGUST,20));
+        Film savedFilm = service.addFilm(film);
+        User savedUser = service.getUserStorage().addUser(user);
 
         //When
-        service.like(film.getId(), user.getId());
-        final Film updFilm = service.findFilm(film.getId());
+        service.like(savedFilm.getId(), savedUser.getId());
+        final Film updFilm = service.findFilm(savedFilm.getId());
 
         //Then
         assertAll("Проверка like фильма",
@@ -149,24 +158,24 @@ class FilmServiceTest {
     void test4_disLikeFilm() throws ValidationException, FilmNotFoundException,
             UserNotFoundException {
         //Given
-        Film film = new Film(1, "film1", "film description",
-                LocalDate.of(2017, 1, 1), 1
-                ,new HashSet<>(List.of(1,2,3)));
-        User user = new User(1, "email@email.com", "login",
-                "name", LocalDate.of(2000,1,1)
-                , new HashSet<>());
-        service.addFilm(film);
-        service.getUserStorage().addUser(user);
+        Film film = new Film( "film1", "film description",
+                LocalDate.of(1989, Month.JULY, 7),
+                100, TestConstants.MPA, TestConstants.GENRES);
+        User user = new User("mail@mail.ru","dolore",
+                "Nick Name", LocalDate.of(1946, Month.AUGUST,20));
+        film.setLikes(new HashSet<>(List.of(1,2,3)));
+        Film savedFilm = service.addFilm(film);
+        User savedUser = service.getUserStorage().addUser(user);
 
         //When
-        service.disLike(film.getId(), user.getId());
+        service.disLike(savedFilm.getId(), savedUser.getId());
         final Film updFilm = service.findFilm(film.getId());
 
         //Then
         assertAll("Проверка disLike фильма",
                 () -> assertEquals(2, updFilm.getLikes().size(),
                         "Неверное кол-во лайков после удаления"),
-                () -> assertEquals(new HashSet<>(List.of(2,3)), film.getLikes(),
+                () -> assertEquals(new HashSet<>(List.of(2,3)), updFilm.getLikes(),
                         "Отличается список лайков после удаления")
         );
     }
@@ -205,12 +214,11 @@ class FilmServiceTest {
         List<Integer> likes = new ArrayList<>();
         for (int i = 0; i < 11; i++) {
             int id = i + 1;
-            Film film = new Film(id, "film" + id,
-                    "film description" + id,
-                    LocalDate.of(2017, 1, 1),
-                    id, new HashSet<>());
+            Film film = new Film( "film1 "+ id, "film description "+ id,
+                    LocalDate.of(1989, Month.JULY, 7), id,
+                    TestConstants.MPA, TestConstants.GENRES);
             if (i > 0) {
-                likes.add(id);
+                likes.add(film.getId());
                 film.setLikes(new HashSet<>(likes));
             }
 
@@ -220,5 +228,12 @@ class FilmServiceTest {
 
     int compare(Film o1, Film o2) {
         return Integer.compare(o2.getLikes().size(), o1.getLikes().size());
+    }
+    private static class TestConstants {
+        static MPARating MPA = new MPARating(1, "G");
+        static Set<FilmGenre> GENRES = new HashSet<>(List.of(
+                new FilmGenre(1, "Drama"),
+                new FilmGenre(2, "Comedy")
+        ));
     }
 }

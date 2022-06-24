@@ -10,9 +10,6 @@ import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -49,11 +46,7 @@ public class UserService {
         }
         UserValidators.isExists(userStorage, user.getId(), String.format(
                 "Пользователь с id = %s не существует.", user.getId()), log);
-        /*if(userStorage.findUser(user.getId()) == null) {
-            log.warn("Пользователь {} не существует", user);
-            throw new UserNotFoundException("Ошибка при обновлении информации " +
-                    "о пользователе.");
-        }*/
+
         return userStorage.updateUser(user);
     }
 
@@ -65,14 +58,7 @@ public class UserService {
                 String.format("Ошибка при добавлении в друзья. Пользователь с id = %s не существует."
                         , otherId), log);
 
-        //Добавляем пользователя otherUser в друзья User
-        final User user = userStorage.findUser(id);
-        user.addFriend(otherId);
-        userStorage.updateUser(user);
-        //Добавляем пользователя User в друзья otherUser
-        final User otherUser = userStorage.findUser(otherId);
-        otherUser.addFriend(id);
-        userStorage.updateUser(otherUser);
+        userStorage.addFriend(id, otherId);
     }
 
     public void deleteFriend(Integer id, Integer otherId) throws UserNotFoundException {
@@ -84,14 +70,7 @@ public class UserService {
                 String.format("Ошибка при удалении. Пользователь с id = %s не существует."
                         , otherId), log);
 
-        //Удаляем пользователя otherUser из друзей User
-        final User user = userStorage.findUser(id);
-        user.removeFriend(otherId);
-        userStorage.updateUser(user);
-        //Удаляем пользователя User из друзей otherUser
-        final User otherUser = userStorage.findUser(otherId);
-        otherUser.removeFriend(id);
-        userStorage.updateUser(otherUser);
+        userStorage.deleteFriend(id, otherId);
     }
 
     public Collection<User> findFriends(Integer id) throws UserNotFoundException {
@@ -100,10 +79,7 @@ public class UserService {
                 "Пользователь с id = %s не существует.", log);
 
         //Определить список друзей
-        final Set<Integer> friendIds = userStorage.findUser(id).getFriends();
-        return userStorage.findAllUsers().stream()
-                .filter(x -> friendIds.contains(x.getId()))
-                .collect(Collectors.toList());
+        return userStorage.findFriends(id);
     }
 
     public Collection<User> findCommonFriends(Integer id, Integer otherId) throws UserNotFoundException {
@@ -114,16 +90,7 @@ public class UserService {
                 "Пользователь с id = %s не существует.", otherId), log);
 
         //Определить список id общих друзей
-        final User user = userStorage.findUser(id);
-        final User otherUser = userStorage.findUser(otherId);
-        Set<Integer> userIds = new HashSet<>(user.getFriends());
-        userIds.addAll(otherUser.getFriends());
-
-        return userStorage.findAllUsers().stream()
-                .filter(x -> userIds.contains(x.getId()))
-                .filter(x -> !(x.getId() == id
-                        || x.getId() == otherId))
-                .collect(Collectors.toList());
+        return userStorage.findCommonFriends(id, otherId);
     }
 
 }
