@@ -10,9 +10,6 @@ import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j

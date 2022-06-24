@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service.validator;
 
 import org.slf4j.Logger;
-import org.springframework.data.relational.core.sql.In;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exception.MPARatingNotFoundException;

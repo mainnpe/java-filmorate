@@ -47,13 +47,8 @@ SELECT *
 FROM users
 WHERE id IN (SELECT DISTINCT friend_id
              FROM friends
-             WHERE user_id = ? --id1
-                  AND friend_id <> ? --id2
-             UNION 
-             SELECT friend_id
-             FROM friends
-             WHERE user_id = ? --id2
-                  AND friend_id <> ? --id1
+             WHERE user_id IN (?,?) --id1,id2
+                  AND friend_id NOT IN (?,?) --id1,id2
             );
 ```
 

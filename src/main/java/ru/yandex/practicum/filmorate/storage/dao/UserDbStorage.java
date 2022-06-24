@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -114,7 +113,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     //Change friendship status if the friendship mutual
-    //senderId is friend of recipientId and vice versa
+    //(senderId is friend of recipientId and vice versa)
     private void updateFriendshipStatus(Integer senderId, Integer recipientId, boolean status) {
         Collection<User> recipientFriends = findFriends(recipientId);
 
@@ -129,7 +128,6 @@ public class UserDbStorage implements UserStorage {
 
         }
     }
-
 
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {
         Integer id = rs.getInt("id");

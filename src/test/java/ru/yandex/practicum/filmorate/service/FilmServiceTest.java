@@ -38,6 +38,7 @@ class FilmServiceTest {
         );
     }
 
+    //    Требования:
     //    название не может быть пустым;
     //    максимальная длина описания — 200 символов;
     //    дата релиза — не раньше 28 декабря 1895 года;
@@ -213,10 +214,6 @@ class FilmServiceTest {
         List<Integer> likes = new ArrayList<>();
         for (int i = 0; i < 11; i++) {
             int id = i + 1;
-//            Film film = new Film(id, "film" + id,
-//                    "film description" + id,
-//                    LocalDate.of(2017, 1, 1),
-//                    id, new HashSet<>());
             Film film = new Film( "film1 "+ id, "film description "+ id,
                     LocalDate.of(1989, Month.JULY, 7), id,
                     TestConstants.MPA, TestConstants.GENRES);

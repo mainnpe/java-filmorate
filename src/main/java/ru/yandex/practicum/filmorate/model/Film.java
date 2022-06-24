@@ -2,10 +2,8 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,21 +34,9 @@ public class Film {
         this.duration = duration;
         this.likes = new HashSet<>();
         this.mpa = mpa;
-//        if (genres == null) {
-//            this.genres = new HashSet<>();
-//        }
         this.genres = genres;
 
     }
-
-
-
-    //    целочисленный идентификатор — id;
-//    название — name;
-//    описание — description;
-//    дата релиза — releaseDate;
-//    продолжительность фильма — duration.
-
 
     public void like(Integer id) {
         likes.add(id);

@@ -111,8 +111,7 @@ public class FilmDbStorage implements FilmStorage {
         updateRate(id, -1); // decrease film rate by 1
     }
 
-    //Increase rate by 1 when user liked film
-    //Decrease rate by 1 when user disliked film
+    //Increase or decrease rate by rateDiff (like/dislike)
     private void updateRate(Integer id, Integer rateDiff) {
         String sql = "update films set rate = rate + ? where id = ?";
         jdbcTemplate.update(sql, rateDiff, id);

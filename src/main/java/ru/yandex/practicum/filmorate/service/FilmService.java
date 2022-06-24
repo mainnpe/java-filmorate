@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -17,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j

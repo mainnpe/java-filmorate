@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +9,6 @@ import lombok.NonNull;
 
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -36,14 +34,10 @@ public class User {
         this.friends = new HashSet<>();
     }
 
-    //    целочисленный идентификатор — id;
-//    электронная почта — email;
-//    логин пользователя — login;
-//    имя для отображения — name;
-//    дата рождения — birthday.
     public void addFriend(Integer id) {
         friends.add(id);
     }
+
     public void removeFriend(Integer id) {
         friends.remove(id);
     }

@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.MPARating;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
