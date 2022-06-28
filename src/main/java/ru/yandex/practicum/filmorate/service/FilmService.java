@@ -2,11 +2,17 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -25,6 +31,10 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmGenreDao genreStorage;
     private final MPARatingDao mpaRatingStorage;
+
+    @Autowired
+    @Qualifier("userEventStorage")
+    private final EventStorage eventStorage;
 
 
     public FilmStorage getFilmStorage() {
@@ -73,6 +83,16 @@ public class FilmService {
                 "Пользователь с id = %s не существует.", userId), log);
 
         filmStorage.like(id, userId);
+
+        EventManager.get().register(
+                eventStorage,
+                new UserEvent(
+                        userId,
+                        id,
+                        UserEventType.LIKE,
+                        UserOperation.ADD
+                )
+        );
     }
 
     public void disLike(Integer id, Integer userId)
@@ -84,6 +104,16 @@ public class FilmService {
                 "Пользователь с id = %s не существует.", userId), log);
 
         filmStorage.disLike(id, userId);
+
+        EventManager.get().register(
+                eventStorage,
+                new UserEvent(
+                        userId,
+                        id,
+                        UserEventType.LIKE,
+                        UserOperation.REMOVE
+                )
+        );
     }
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
