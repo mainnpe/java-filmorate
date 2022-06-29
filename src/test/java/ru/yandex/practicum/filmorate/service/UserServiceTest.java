@@ -18,7 +18,8 @@ class UserServiceTest {
     @BeforeEach
     void beforeEach() {
         service = new UserService(
-                new InMemoryUserStorage()
+                new InMemoryUserStorage(),
+                new EventManager<>()
         );
     }
 

@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.Order;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,6 @@ import java.util.*;
 
 @Component
 @Slf4j
-@Qualifier("userEventStorage")
 public class UserEventStorageImpl implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
     private final String SELECT_EVENTS_BY_USER_ID = "SELECT tb1.* " +
@@ -50,18 +49,20 @@ public class UserEventStorageImpl implements EventStorage {
     }
 
     private UserEvent buildUserEvent(SqlRowSet rows){
-        UserEvent event = new UserEvent();
+        UserEvent event = new UserEvent(
+            rows.getLong("user_id"),
+            rows.getLong("entity_id"),
+            UserEventType.valueOf(rows.getString("event_type")),
+            UserOperation.valueOf(rows.getString("user_operation"))
+        );
         event.setEventId(rows.getLong("event_id"));
-        event.setEntityId(rows.getLong("entity_id"));
         event.setCdate(rows.getTimestamp("cdate"));
-        event.setUserId(rows.getLong("user_id"));
-        event.setEventType(UserEventType.valueOf(
-                rows.getString("event_type")
-        ));
-        event.setOperation(UserOperation.valueOf(
-                rows.getString("user_operation")
-        ));
         return event;
 
+    }
+
+    @Override
+    public String toString() {
+        return "UserEventStorageImpl";
     }
 }

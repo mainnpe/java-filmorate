@@ -1,23 +1,28 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.eventmanager.SysEvent;
 
-@Component
+import java.util.List;
+
+@Service
 public class EventManager<T extends SysEvent> {
 
     private static EventManager instance;
+    @Autowired
+    private List<EventStorage> storages;
 
-    public static synchronized EventManager get() {
-        if (instance == null) {
-            instance = new EventManager();
+    public void register(T event){
+        for(EventStorage s: storages)
+        {
+            if(event.getStorageName().equals(s.getClass().getSimpleName()))
+            {
+                s.createEvent(event);
+                break;
+            }
         }
-        return instance;
-    }
-
-    public void register(EventStorage storage, T event){
-        storage.createEvent(event);
     }
 
 }

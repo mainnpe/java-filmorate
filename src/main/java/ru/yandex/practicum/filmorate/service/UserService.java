@@ -3,11 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
@@ -23,9 +21,9 @@ import java.util.Collection;
 public class UserService {
 
     private final UserStorage userStorage;
+
     @Autowired
-    @Qualifier("userEventStorage")
-    private final EventStorage eventStorage;
+    private final EventManager eventManager;
 
     public Collection<User> findAllUsers() {
         return userStorage.findAllUsers();
@@ -69,15 +67,12 @@ public class UserService {
 
         userStorage.addFriend(id, otherId);
 
-        EventManager.get().register(
-                eventStorage,
-                new UserEvent(
-                        id,
-                        otherId,
-                        UserEventType.FRIEND,
-                        UserOperation.ADD
-                )
-        );
+        eventManager.register(new UserEvent(
+                id,
+                otherId,
+                UserEventType.FRIEND,
+                UserOperation.ADD
+        ));
     }
 
     public void deleteFriend(Integer id, Integer otherId) throws UserNotFoundException {
@@ -91,15 +86,12 @@ public class UserService {
 
         userStorage.deleteFriend(id, otherId);
 
-        EventManager.get().register(
-                eventStorage,
-                new UserEvent(
-                        id,
-                        otherId,
-                        UserEventType.FRIEND,
-                        UserOperation.REMOVE
-                )
-        );
+        eventManager.register(new UserEvent(
+                id,
+                otherId,
+                UserEventType.FRIEND,
+                UserOperation.REMOVE
+        ));
     }
 
     public Collection<User> findFriends(Integer id) throws UserNotFoundException {

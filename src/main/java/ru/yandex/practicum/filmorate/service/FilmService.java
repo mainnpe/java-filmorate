@@ -33,9 +33,7 @@ public class FilmService {
     private final MPARatingDao mpaRatingStorage;
 
     @Autowired
-    @Qualifier("userEventStorage")
-    private final EventStorage eventStorage;
-
+    private final EventManager eventManager;
 
     public FilmStorage getFilmStorage() {
         return filmStorage;
@@ -84,15 +82,12 @@ public class FilmService {
 
         filmStorage.like(id, userId);
 
-        EventManager.get().register(
-                eventStorage,
-                new UserEvent(
-                        userId,
-                        id,
-                        UserEventType.LIKE,
-                        UserOperation.ADD
-                )
-        );
+        eventManager.register(new UserEvent(
+                userId,
+                id,
+                UserEventType.LIKE,
+                UserOperation.ADD
+        ));
     }
 
     public void disLike(Integer id, Integer userId)
@@ -105,15 +100,12 @@ public class FilmService {
 
         filmStorage.disLike(id, userId);
 
-        EventManager.get().register(
-                eventStorage,
-                new UserEvent(
-                        userId,
-                        id,
-                        UserEventType.LIKE,
-                        UserOperation.REMOVE
-                )
-        );
+        eventManager.register(new UserEvent(
+                userId,
+                id,
+                UserEventType.LIKE,
+                UserOperation.REMOVE
+        ));
     }
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
