@@ -23,4 +23,5 @@ public interface FilmStorage {
 
     Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year);
 
+    Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId);
 }

@@ -132,6 +132,14 @@ public class FilmService {
         return mpaRatingStorage.findAllRatings();
     }
 
+    public Collection<Film> findCommonFilmsByUsersIds(int userId,int friendId) throws UserNotFoundException {
+        UserValidators.isExists(userStorage, userId, String.format(
+                "Пользователь с id = %s не существует.", userId), log);
+        UserValidators.isExists(userStorage, friendId, String.format(
+                "Пользователь с id = %s не существует.", userId), log);
+        return filmStorage.findCommonFilmsByUsersIds(userId, friendId);
+    }
+
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count,int genreId,int year)
             throws GenreNotFoundException, ValidationException {
         if(genreId != -1) {
