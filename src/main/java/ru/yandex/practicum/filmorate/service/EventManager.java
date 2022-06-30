@@ -9,8 +9,6 @@ import java.util.List;
 
 @Service
 public class EventManager<T extends SysEvent> {
-
-    private static EventManager instance;
     @Autowired
     private List<EventStorage> storages;
 
