@@ -108,6 +108,12 @@ public class FilmService {
         ));
     }
 
+    public void deleteFilm(int id) throws FilmNotFoundException {
+        FilmValidators.isExists(filmStorage, id, String.format(
+                "Фильм с id = %s не существует.", id), log);
+        filmStorage.deleteFilm(id);
+    }
+
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
         return filmStorage.findNMostPopularFilms(count);
     }
