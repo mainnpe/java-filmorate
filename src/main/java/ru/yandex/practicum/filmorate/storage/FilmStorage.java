@@ -21,4 +21,5 @@ public interface FilmStorage {
 
     Collection<Film> findNMostPopularFilms(Optional<Integer> count);
 
+    void deleteFilm(int id);
 }

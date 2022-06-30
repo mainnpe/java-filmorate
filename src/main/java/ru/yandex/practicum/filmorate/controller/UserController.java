@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.interfaces.EventService;
@@ -82,4 +83,10 @@ public class UserController {
         return ResponseEntity.ok(eventManager.getUserEventsById(id));
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Integer id)
+            throws UserNotFoundException
+    {
+        userService.deleteUser(id);
+    }
 }

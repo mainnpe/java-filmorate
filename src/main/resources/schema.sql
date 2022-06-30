@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS films
 
 CREATE TABLE IF NOT EXISTS friends
 (
-    user_id INTEGER REFERENCES users,
-    friend_id INTEGER REFERENCES users,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
+    friend_id INTEGER REFERENCES users ON DELETE CASCADE,
     status BOOLEAN DEFAULT FALSE,
     CONSTRAINT friends_pk PRIMARY KEY (user_id, friend_id),
     CONSTRAINT self_friend CHECK (user_id <> friend_id)
@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS friends
 
 CREATE TABLE IF NOT EXISTS film_likes
 (
-    film_id INTEGER REFERENCES films,
-    user_id INTEGER REFERENCES users,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
     CONSTRAINT flikes_pk PRIMARY KEY (film_id, user_id)
 );
 
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS film_genres
 
 CREATE TABLE IF NOT EXISTS film_genre_rel
 (
-    film_id INTEGER REFERENCES films,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
     genre_id INTEGER REFERENCES film_genres,
     CONSTRAINT fgr_pk PRIMARY KEY (film_id, genre_id)
 );
@@ -73,4 +73,4 @@ CREATE TABLE IF NOT EXISTS user_events
 );
 
 CREATE INDEX IF NOT EXISTS uevents ON user_events (event_id, entity_id, user_id);
-ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
