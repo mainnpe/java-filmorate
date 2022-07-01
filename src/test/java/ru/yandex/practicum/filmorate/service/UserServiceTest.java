@@ -22,6 +22,8 @@ class UserServiceTest {
         service = new UserService(
                 new InMemoryUserStorage(),
                 new InMemoryFilmStorage()
+                new EventManager<>()
+
         );
     }
 

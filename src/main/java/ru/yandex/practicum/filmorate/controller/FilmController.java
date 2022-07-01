@@ -2,13 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.constraints.Positive;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -30,11 +34,14 @@ public class FilmController {
     }
 
     //GET /films/popular?count={count}
+    /*
     @GetMapping("/popular")
     public Collection<Film> findNMostPopularFilms(@RequestParam Optional<Integer> count)
     {
         return filmService.findNMostPopularFilms(count);
     }
+
+     */
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) throws ValidationException {
@@ -64,6 +71,26 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
+
+    @GetMapping(value = "/popular")
+    public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (
+            @Positive
+            @RequestParam(name="count", defaultValue = "10") int count,
+            @RequestParam(name="genreId", defaultValue = "-1") int genreId,
+            @RequestParam(name="year", defaultValue = "-1") int year)
+        throws GenreNotFoundException, ValidationException {
+        return ResponseEntity.ok(filmService.findMostPopularFilmsByGenreAndYear(count, genreId, year));
+    }
+
+    @GetMapping(value = "/common")
+    public ResponseEntity<Collection<Film>> findCommonFilmsByUsersIds (
+            @Positive
+            @RequestParam(name = "userId") int userId,
+            @Positive
+            @RequestParam(name = "friendId") int friendId
+    ) throws UserNotFoundException {
+        return ResponseEntity.ok(filmService.findCommonFilmsByUsersIds(userId, friendId));
+    }
 
 }
 

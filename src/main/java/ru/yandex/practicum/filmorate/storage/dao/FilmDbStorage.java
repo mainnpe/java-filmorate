@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -19,7 +20,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+
 import java.util.stream.Collectors;
+
+
 
 @Repository
 @Primary
@@ -133,6 +137,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::makeFilm, count.orElse(10));
     }
 
+
     @Override
     public Map<Integer, List<Integer>> getAllFilmsLikes() {
         String sql = "select * from film_likes";
@@ -154,6 +159,69 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return likes;
+
+
+    @Override
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT f.* FROM films AS f ");
+        if(genreId > 0){
+            sql.append("LEFT JOIN film_genre_rel AS g ON f.id = g.film_id ");
+        }
+        if(genreId > 0 || year > 0){
+            sql.append("WHERE ");
+            if(year > 0){
+                sql.append("(f.release_date >= ? AND f.release_date <= ?) ");
+            }
+            if(genreId > 0 && year > 0){
+                sql.append("AND ");
+            }
+            if(genreId > 0){
+                sql.append("g.genre_id  = ? ");
+            }
+        }
+        sql.append("ORDER BY f.rate DESC ");
+        sql.append("LIMIT ?");
+        if(genreId > 0 && year > 0){
+            return jdbcTemplate.query(sql.toString(),
+                    this::makeFilm,
+                    LocalDate.of(year, 1, 1),
+                    LocalDate.of(year, 12, 31),
+                    genreId, count);
+        }
+        if(year > 0){
+            return jdbcTemplate.query(sql.toString(),
+                    this::makeFilm,
+                    LocalDate.of(year, 1, 1),
+                    LocalDate.of(year, 12, 31),
+                    count);
+        }
+        if(genreId > 0){
+            return jdbcTemplate.query(sql.toString(), this::makeFilm, genreId, count);
+        }
+        return jdbcTemplate.query(sql.toString(), this::makeFilm, count);
+    }
+
+    public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId){
+        String sql = "SELECT fl.film_id " +
+                "FROM film_likes fl " +
+                "WHERE fl.user_id in (?, ?) " +
+                "GROUP BY  fl.film_id  " +
+                "HAVING COUNT(DISTINCT fl.user_id) = 2";
+        SqlRowSet rows = jdbcTemplate.queryForRowSet(sql, userId, friendId);
+        Set<String> filmIds = new HashSet<>();
+        if(rows.next()){
+            filmIds.add(rows.getString("film_id"));
+        }
+        if(filmIds.size() > 0) {
+            String sql2 = "SELECT * FROM films " +
+                    "WHERE id IN ( " + String.join(",", filmIds)+ " ) " +
+                    "ORDER BY rate DESC";
+            return jdbcTemplate.query(sql2, this::makeFilm);
+        } else {
+            return Collections.emptyList();
+        }
+
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

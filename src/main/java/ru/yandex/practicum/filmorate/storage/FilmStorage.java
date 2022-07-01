@@ -25,7 +25,11 @@ public interface FilmStorage {
 
     Collection<Film> findNMostPopularFilms(Optional<Integer> count);
 
+
     Map<Integer, List<Integer>> getAllFilmsLikes();
 
+    Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year);
+
+    Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId);
 
 }
