@@ -1,5 +1,6 @@
 -- DROP TABLES
-DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, reviews, review_scores;
+DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, user_events, reviews, review_scores;
+
 -- create tables
 CREATE TABLE IF NOT EXISTS users
 (
@@ -61,6 +62,20 @@ CREATE TABLE IF NOT EXISTS film_genre_rel
     genre_id INTEGER REFERENCES film_genres,
     CONSTRAINT fgr_pk PRIMARY KEY (film_id, genre_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS user_events
+(
+    event_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    entity_id INTEGER,
+    user_id INTEGER,
+    event_type VARCHAR(64),
+    user_operation VARCHAR(64),
+    cdate TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS uevents ON user_events (event_id, entity_id, user_id);
+ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id);
 
 CREATE TABLE IF NOT EXISTS reviews
 (
