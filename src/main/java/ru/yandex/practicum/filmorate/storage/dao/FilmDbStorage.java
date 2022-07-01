@@ -6,6 +6,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -17,10 +18,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @Primary
@@ -44,6 +43,18 @@ public class FilmDbStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    @Override
+    public Collection<Film> findFilms(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        String filmIds = ids.stream().map(String::valueOf)
+                .collect(Collectors.joining(","));
+        String sql = "select * from films " +
+                "where id in (" + filmIds + ")";
+        return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     @Override
@@ -120,6 +131,29 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
         String sql = "select * from films order by rate desc limit ?";
         return jdbcTemplate.query(sql, this::makeFilm, count.orElse(10));
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getAllFilmsLikes() {
+        String sql = "select * from film_likes";
+        Map<Integer, List<Integer>> likes = new HashMap<>();
+
+        SqlRowSet rows = jdbcTemplate.queryForRowSet(sql);
+
+        while (rows.next()) {
+            int userId = rows.getInt("user_id");
+            int filmId = rows.getInt("film_id");
+
+            if(!likes.containsKey(userId)) {
+                likes.put(userId, new ArrayList<>(List.of(filmId)));
+            }
+            List<Integer> newValue = likes.get(userId);
+            newValue.add(filmId); //Add new like
+
+            likes.put(userId, newValue);
+        }
+
+        return likes;
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
