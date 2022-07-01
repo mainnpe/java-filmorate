@@ -14,7 +14,6 @@ public class InMemoryUserStorage implements UserStorage{
     private final Map<Integer, User> users;
     private int userUniqueId;
 
-
     public InMemoryUserStorage() {
         this.users = new HashMap<>();
         this.userUniqueId = 1;
@@ -83,5 +82,10 @@ public class InMemoryUserStorage implements UserStorage{
         final User user = findUser(id);
         user.removeFriend(otherId);
         updateUser(user);
+    }
+
+    @Override
+    public void deleteUser(int id) {
+
     }
 }

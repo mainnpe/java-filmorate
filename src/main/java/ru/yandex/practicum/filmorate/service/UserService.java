@@ -2,10 +2,16 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
+import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -17,6 +23,9 @@ import java.util.Collection;
 public class UserService {
 
     private final UserStorage userStorage;
+
+    @Autowired
+    private final EventManager eventManager;
 
     public Collection<User> findAllUsers() {
         return userStorage.findAllUsers();
@@ -59,6 +68,13 @@ public class UserService {
                         , otherId), log);
 
         userStorage.addFriend(id, otherId);
+
+        eventManager.register(new UserEvent(
+                id,
+                otherId,
+                UserEventType.FRIEND,
+                UserOperation.ADD
+        ));
     }
 
     public void deleteFriend(Integer id, Integer otherId) throws UserNotFoundException {
@@ -71,6 +87,18 @@ public class UserService {
                         , otherId), log);
 
         userStorage.deleteFriend(id, otherId);
+
+        eventManager.register(new UserEvent(
+                id,
+                otherId,
+                UserEventType.FRIEND,
+                UserOperation.REMOVE
+        ));
+    }
+
+    public void deleteUser(int id) throws UserNotFoundException {
+        UserValidators.isExists(userStorage, id, "Невалидный id пользователя, ", log);
+        userStorage.deleteUser(id);
     }
 
     public Collection<User> findFriends(Integer id) throws UserNotFoundException {
