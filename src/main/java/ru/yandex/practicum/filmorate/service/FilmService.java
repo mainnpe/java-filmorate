@@ -132,4 +132,16 @@ public class FilmService {
         return mpaRatingStorage.findAllRatings();
     }
 
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count,int genreId,int year)
+            throws GenreNotFoundException, ValidationException {
+        if(genreId != -1) {
+            FilmValidators.isGenreExists(genreStorage, genreId, String.format(
+                    "Жанр фильма с id = %s не существует.", genreId), log);
+        }
+        if(year < FilmValidators.EARLIEST_RELEASE_DATE.getYear() && year != -1) {
+            throw new ValidationException("В этот год кино еще не снимали");
+        }
+        return filmStorage.findMostPopularFilmsByGenreAndYear(count, genreId, year);
+    }
+
 }

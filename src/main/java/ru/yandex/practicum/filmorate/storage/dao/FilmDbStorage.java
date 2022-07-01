@@ -122,6 +122,48 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::makeFilm, count.orElse(10));
     }
 
+
+    @Override
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT f.* FROM films AS f ");
+        if(genreId > 0){
+            sql.append("LEFT JOIN film_genre_rel AS g ON f.id = g.film_id ");
+        }
+        if(genreId > 0 || year > 0){
+            sql.append("WHERE ");
+            if(year > 0){
+                sql.append("(f.release_date >= ? AND f.release_date <= ?) ");
+            }
+            if(genreId > 0 && year > 0){
+                sql.append("AND ");
+            }
+            if(genreId > 0){
+                sql.append("g.genre_id  = ? ");
+            }
+        }
+        sql.append("ORDER BY f.rate DESC ");
+        sql.append("LIMIT ?");
+        if(genreId > 0 && year > 0){
+            return jdbcTemplate.query(sql.toString(),
+                    this::makeFilm,
+                    LocalDate.of(year, 1, 1),
+                    LocalDate.of(year, 12, 31),
+                    genreId, count);
+        }
+        if(year > 0){
+            return jdbcTemplate.query(sql.toString(),
+                    this::makeFilm,
+                    LocalDate.of(year, 1, 1),
+                    LocalDate.of(year, 12, 31),
+                    count);
+        }
+        if(genreId > 0){
+            return jdbcTemplate.query(sql.toString(), this::makeFilm, genreId, count);
+        }
+        return jdbcTemplate.query(sql.toString(), this::makeFilm, count);
+    }
+
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         int id = rs.getInt("id");
         String name = rs.getString("name");
