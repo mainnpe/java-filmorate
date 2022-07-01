@@ -71,6 +71,7 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
+
     @GetMapping(value = "/popular")
     public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (
             @Positive
@@ -90,5 +91,6 @@ public class FilmController {
     ) throws UserNotFoundException {
         return ResponseEntity.ok(filmService.findCommonFilmsByUsersIds(userId, friendId));
     }
+
 }
 

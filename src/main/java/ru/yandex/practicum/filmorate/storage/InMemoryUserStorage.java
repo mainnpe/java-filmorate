@@ -83,4 +83,5 @@ public class InMemoryUserStorage implements UserStorage{
         user.removeFriend(otherId);
         updateUser(user);
     }
+
 }

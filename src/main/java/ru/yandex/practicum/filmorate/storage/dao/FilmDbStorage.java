@@ -21,6 +21,10 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
+import java.util.stream.Collectors;
+
+
+
 @Repository
 @Primary
 @RequiredArgsConstructor
@@ -43,6 +47,18 @@ public class FilmDbStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    @Override
+    public Collection<Film> findFilms(List<Integer> ids) {
+        if (ids.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        String filmIds = ids.stream().map(String::valueOf)
+                .collect(Collectors.joining(","));
+        String sql = "select * from films " +
+                "where id in (" + filmIds + ")";
+        return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     @Override
@@ -123,6 +139,29 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
+    public Map<Integer, List<Integer>> getAllFilmsLikes() {
+        String sql = "select * from film_likes";
+        Map<Integer, List<Integer>> likes = new HashMap<>();
+
+        SqlRowSet rows = jdbcTemplate.queryForRowSet(sql);
+
+        while (rows.next()) {
+            int userId = rows.getInt("user_id");
+            int filmId = rows.getInt("film_id");
+
+            if(!likes.containsKey(userId)) {
+                likes.put(userId, new ArrayList<>(List.of(filmId)));
+            }
+            List<Integer> newValue = likes.get(userId);
+            newValue.add(filmId); //Add new like
+
+            likes.put(userId, newValue);
+        }
+
+        return likes;
+
+
+    @Override
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT f.* FROM films AS f ");
@@ -182,6 +221,7 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             return Collections.emptyList();
         }
+
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

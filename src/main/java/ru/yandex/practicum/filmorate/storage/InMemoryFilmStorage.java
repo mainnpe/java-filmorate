@@ -4,10 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,6 +28,11 @@ public class InMemoryFilmStorage implements FilmStorage{
     @Override
     public Film findFilm(Integer id) {
         return films.get(id);
+    }
+
+    @Override
+    public Collection<Film> findFilms(List<Integer> ids) {
+        return null;
     }
 
     @Override
@@ -72,12 +74,18 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
+    public Map<Integer, List<Integer>> getAllFilmsLikes() {
+        return null;
+    }
+    
+    @Override
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
         return null;
     }
-
+    
     @Override
     public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId) {
+
         return null;
     }
 }
