@@ -3,9 +3,11 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -17,10 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Repository
 @Primary
@@ -162,6 +161,27 @@ public class FilmDbStorage implements FilmStorage {
             return jdbcTemplate.query(sql.toString(), this::makeFilm, genreId, count);
         }
         return jdbcTemplate.query(sql.toString(), this::makeFilm, count);
+    }
+
+    public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId){
+        String sql = "SELECT fl.film_id " +
+                "FROM film_likes fl " +
+                "WHERE fl.user_id in (?, ?) " +
+                "GROUP BY  fl.film_id  " +
+                "HAVING COUNT(DISTINCT fl.user_id) = 2";
+        SqlRowSet rows = jdbcTemplate.queryForRowSet(sql, userId, friendId);
+        Set<String> filmIds = new HashSet<>();
+        if(rows.next()){
+            filmIds.add(rows.getString("film_id"));
+        }
+        if(filmIds.size() > 0) {
+            String sql2 = "SELECT * FROM films " +
+                    "WHERE id IN ( " + String.join(",", filmIds)+ " ) " +
+                    "ORDER BY rate DESC";
+            return jdbcTemplate.query(sql2, this::makeFilm);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

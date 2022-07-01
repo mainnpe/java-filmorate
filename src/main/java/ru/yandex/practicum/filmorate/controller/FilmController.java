@@ -80,5 +80,15 @@ public class FilmController {
         throws GenreNotFoundException, ValidationException {
         return ResponseEntity.ok(filmService.findMostPopularFilmsByGenreAndYear(count, genreId, year));
     }
+
+    @GetMapping(value = "/common")
+    public ResponseEntity<Collection<Film>> findCommonFilmsByUsersIds (
+            @Positive
+            @RequestParam(name = "userId") int userId,
+            @Positive
+            @RequestParam(name = "friendId") int friendId
+    ) throws UserNotFoundException {
+        return ResponseEntity.ok(filmService.findCommonFilmsByUsersIds(userId, friendId));
+    }
 }
 

@@ -18,7 +18,8 @@ public class UserEventStorageImpl implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
     private final String SELECT_EVENTS_BY_USER_ID = "SELECT tb1.* " +
             "FROM user_events AS tb1 " +
-            "WHERE tb1.user_id = ? ";
+            "WHERE tb1.user_id = ? " +
+            "ORDER BY tb1.cdate DESC";
 
     private final String INSERT_USER_EVENT = "INSERT INTO user_events " +
             "(user_id, entity_id, event_type, user_operation) VALUES (?, ?, ?, ?)";
