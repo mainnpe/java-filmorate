@@ -149,7 +149,7 @@ public class FilmDbStorage implements FilmStorage {
             int userId = rows.getInt("user_id");
             int filmId = rows.getInt("film_id");
 
-            if(!likes.containsKey(userId)) {
+            if (!likes.containsKey(userId)) {
                 likes.put(userId, new ArrayList<>(List.of(filmId)));
             }
             List<Integer> newValue = likes.get(userId);
@@ -159,7 +159,7 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return likes;
-
+    }
 
     @Override
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {

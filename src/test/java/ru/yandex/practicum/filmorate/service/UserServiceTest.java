@@ -21,8 +21,8 @@ class UserServiceTest {
     void beforeEach() {
         service = new UserService(
                 new InMemoryUserStorage(),
-                new InMemoryFilmStorage()
-                new EventManager<>()
+                new InMemoryFilmStorage(),
+                new EventManager()
 
         );
     }
