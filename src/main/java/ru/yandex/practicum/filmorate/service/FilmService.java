@@ -4,13 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
+import ru.yandex.practicum.filmorate.service.validator.DirectorValidators;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
@@ -25,6 +28,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmGenreDao genreStorage;
     private final MPARatingDao mpaRatingStorage;
+    private final DirectorDao directorStorage;
 
 
     public FilmStorage getFilmStorage() {
@@ -110,4 +114,49 @@ public class FilmService {
         return mpaRatingStorage.findAllRatings();
     }
 
+    public Director findDirector(Integer director_id) throws DirectorNotFoundException {
+        DirectorValidators.isDirectorExists(directorStorage, director_id, String.format(
+                "Режиссёр с id = %s не существует.", director_id), log);
+        return directorStorage.findDirector(director_id);
+    }
+    public Collection<Director> findAllDirectors() {
+        return directorStorage.findAllDirector();
+    }
+
+    public Director addDirector(Director director) throws ValidationException {
+        if (!DirectorValidators.validateFormat(director)) {
+            log.warn("Ошибка при создании режиссёра");
+            throw new ValidationException("Ошибка при создании режиссёра");
+        }
+        return directorStorage.addDirector(director);
+    }
+
+    public Director updateDirector(Director director)
+            throws ValidationException, DirectorNotFoundException {
+        if (!DirectorValidators.validateFormat(director)) {
+            log.warn("Ошибка при создании режиссёра");
+            throw new ValidationException("Ошибка при создании режиссёра");
+        }
+        DirectorValidators.isDirectorExists(directorStorage, director.getId(), String.format(
+                "Режиссёр с id = %s не существует.", director.getId()), log);
+        return directorStorage.updateDirector(director);
+    }
+
+    public Collection<Film> findFilmsOfDirector(Integer id, String sortBy) throws DirectorNotFoundException {
+        DirectorValidators.isDirectorExists(directorStorage, id, String.format(
+                "Режиссёр с id = %s не существует.", id), log);
+        if (sortBy.equals("likes")) {
+            return filmStorage.findFilmsOfDirectorSortByLikes(id);
+        } else if (sortBy.equals("year")) {
+            return filmStorage.findFilmsOfDirectorSortByYear(id);
+        }
+        return null;
+    }
+
+    public void deleteDirector(Integer director_id) throws DirectorNotFoundException {
+        DirectorValidators.isDirectorExists(directorStorage, director_id, String.format(
+                "Режиссёр с id = %s не существует.", director_id), log);
+        directorStorage.deleteDirectorsFromFilm(director_id);
+        directorStorage.deleteDirectors(director_id);
+    }
 }

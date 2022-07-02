@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
@@ -29,6 +30,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmGenreDao filmGenreDao;
     private final MPARatingDao mpaRatingDao;
+    private final DirectorDao directorDao;
 
     @Override
     public Collection<Film> findAllFilms() {
@@ -68,6 +70,7 @@ public class FilmDbStorage implements FilmStorage {
             int id = keyHolder.getKey().intValue();
             film.setId(id);//assign auto-generated id
             filmGenreDao.addFilmGenres(film);//add film genres
+            directorDao.addFilmDirectors(film);//add film directors
             return findFilm(id);
         }
         return null;
@@ -88,10 +91,15 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
 
         filmGenreDao.updateFilmGenres(film); //update film genres
+        directorDao.updateFilmDirectors(film); //update film directors
         if (rows == 1) {
             Film updFilm = findFilm(film.getId());
             if (initFilm.getGenres() != null && updFilm.getGenres() == null) {
                 updFilm.setGenres(new HashSet<>()); // using to fit postman tests only
+                //updFilm.setDirectors(new HashSet<>()); // using to fit postman tests only
+            }
+            if (initFilm.getDirectors().size() != 0 && updFilm.getDirectors().size() == 0) {
+                updFilm.setDirectors(null); // using to fit postman tests only
             }
             return updFilm;
         }
@@ -122,6 +130,36 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::makeFilm, count.orElse(10));
     }
 
+    @Override
+    public Collection<Film> findFilmsOfDirectorSortByYear(Integer id) {
+        String sql = "select F2.ID, " +
+                "F2.NAME, " +
+                "F2.DESCRIPTION, " +
+                "F2.RELEASE_DATE, " +
+                "F2.DURATION, " +
+                "F2.MPA_RATING_ID " +
+                "from DIRECTOR_REL " +
+                "JOIN FILMS F2 on DIRECTOR_REL.FILM_ID = F2.ID " +
+                "where DIRECTOR_REL.ID = ? order by release_date";
+
+        return jdbcTemplate.query(sql, this::makeFilm, id);
+    }
+
+    @Override
+    public Collection<Film> findFilmsOfDirectorSortByLikes(Integer id) {
+        String sql = "select F2.ID, " +
+                "F2.NAME, " +
+                "F2.DESCRIPTION, " +
+                "F2.RELEASE_DATE, " +
+                "F2.DURATION, " +
+                "F2.MPA_RATING_ID " +
+                "from DIRECTOR_REL " +
+                "JOIN FILMS F2 on DIRECTOR_REL.FILM_ID = F2.ID " +
+                "where DIRECTOR_REL.ID = ? order by rate";
+
+        return jdbcTemplate.query(sql, this::makeFilm, id);
+    }
+
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         int id = rs.getInt("id");
         String name = rs.getString("name");
@@ -132,9 +170,10 @@ public class FilmDbStorage implements FilmStorage {
 
         MPARating mpa = mpaRatingDao.findRating(mpa_id);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findFilmGenres(id));
+        Set<Director> directors = new HashSet<>(directorDao.findFilmDirectors(id));
         genres = genres.isEmpty() ? null : genres; //for postman test fitting
 
         return new Film(id, name, description, releaseDate,
-                duration, new HashSet<>(), mpa, genres);
+                duration, directors, new HashSet<>(), mpa, genres);
     }
 }

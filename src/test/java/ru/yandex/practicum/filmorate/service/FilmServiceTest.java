@@ -6,13 +6,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.MPARating;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
@@ -34,7 +32,8 @@ class FilmServiceTest {
                 new InMemoryFilmStorage(),
                 new InMemoryUserStorage(),
                 new FilmGenreDao(new JdbcTemplate()),
-                new MPARatingDao(new JdbcTemplate())
+                new MPARatingDao(new JdbcTemplate()),
+                new DirectorDao(new JdbcTemplate())
         );
     }
 
@@ -50,20 +49,20 @@ class FilmServiceTest {
         Stream.generate(() -> new Random().nextInt(1))
                 .limit(201).forEach(x -> sb.append("a"));
         Film filmBlankName = new Film( " ", "film description",
-                LocalDate.of(2017, 1, 1), 1
-                , TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), 1,
+                TestConstants.DIRECTOR, TestConstants.MPA, TestConstants.GENRES);
         Film filmEmptyName = new Film( "", "film description",
-                LocalDate.of(2017, 1, 1), 1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), 1,
+                TestConstants.DIRECTOR, TestConstants.MPA, TestConstants.GENRES);
         Film filmExtraLongDescription = new Film( "film1", sb.toString(),
-                LocalDate.of(2017, 1, 1), 1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), 1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
         Film filmInvalidRelease = new Film( "name", "film description",
-                FilmValidators.EARLIEST_RELEASE_DATE.minusDays(1), 1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                FilmValidators.EARLIEST_RELEASE_DATE.minusDays(1), 1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
         Film filmNegativeDuration = new Film( "film1", "film description",
-                LocalDate.of(2017, 1, 1), -1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), -1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
 
 
         //When
@@ -93,20 +92,20 @@ class FilmServiceTest {
         Stream.generate(() -> new Random().nextInt(1))
                 .limit(201).forEach(x -> sb.append("a"));
         Film filmBlankName = new Film( " ", "film description",
-                LocalDate.of(2017, 1, 1), 1
-                , TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), 1,
+                TestConstants.DIRECTOR, TestConstants.MPA, TestConstants.GENRES);
         Film filmEmptyName = new Film( "", "film description",
-                LocalDate.of(2017, 1, 1), 1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), 1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
         Film filmExtraLongDescription = new Film( "film1", sb.toString(),
-                LocalDate.of(2017, 1, 1), 1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), 1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
         Film filmInvalidRelease = new Film( "name", "film description",
-                FilmValidators.EARLIEST_RELEASE_DATE.minusDays(1), 1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                FilmValidators.EARLIEST_RELEASE_DATE.minusDays(1), 1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
         Film filmNegativeDuration = new Film( "film1", "film description",
-                LocalDate.of(2017, 1, 1), -1
-                ,TestConstants.MPA, TestConstants.GENRES);
+                LocalDate.of(2017, 1, 1), -1,
+                TestConstants.DIRECTOR,TestConstants.MPA, TestConstants.GENRES);
 
 
         //When
@@ -135,7 +134,7 @@ class FilmServiceTest {
         //Given
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, TestConstants.MPA, TestConstants.GENRES);
+                100, TestConstants.DIRECTOR, TestConstants.MPA, TestConstants.GENRES);
         User user = new User("mail@mail.ru","dolore",
                 "Nick Name", LocalDate.of(1946, Month.AUGUST,20));
         Film savedFilm = service.addFilm(film);
@@ -160,7 +159,7 @@ class FilmServiceTest {
         //Given
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, TestConstants.MPA, TestConstants.GENRES);
+                100, TestConstants.DIRECTOR, TestConstants.MPA, TestConstants.GENRES);
         User user = new User("mail@mail.ru","dolore",
                 "Nick Name", LocalDate.of(1946, Month.AUGUST,20));
         film.setLikes(new HashSet<>(List.of(1,2,3)));
@@ -215,7 +214,7 @@ class FilmServiceTest {
         for (int i = 0; i < 11; i++) {
             int id = i + 1;
             Film film = new Film( "film1 "+ id, "film description "+ id,
-                    LocalDate.of(1989, Month.JULY, 7), id,
+                    LocalDate.of(1989, Month.JULY, 7), id, TestConstants.DIRECTOR,
                     TestConstants.MPA, TestConstants.GENRES);
             if (i > 0) {
                 likes.add(film.getId());
@@ -230,6 +229,7 @@ class FilmServiceTest {
         return Integer.compare(o2.getLikes().size(), o1.getLikes().size());
     }
     private static class TestConstants {
+        static Set<Director> DIRECTOR = new HashSet<>();
         static MPARating MPA = new MPARating(1, "G");
         static Set<FilmGenre> GENRES = new HashSet<>(List.of(
                 new FilmGenre(1, "Drama"),

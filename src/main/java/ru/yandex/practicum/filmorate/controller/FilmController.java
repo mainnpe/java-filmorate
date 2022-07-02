@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.DirectorNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -63,6 +64,16 @@ public class FilmController {
     {
         filmService.disLike(id, userId);
     }
+
+    //films/director/{directorId}?sortBy=[year,likes]
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> findFilmsDirectorSortByYear(@PathVariable Integer directorId,
+                                                        @RequestParam String sortBy)
+            throws DirectorNotFoundException {
+        return filmService.findFilmsOfDirector(directorId, sortBy);
+    }
+
+
 
 }
 

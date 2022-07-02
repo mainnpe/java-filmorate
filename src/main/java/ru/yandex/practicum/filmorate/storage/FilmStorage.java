@@ -21,4 +21,7 @@ public interface FilmStorage {
 
     Collection<Film> findNMostPopularFilms(Optional<Integer> count);
 
+    Collection<Film> findFilmsOfDirectorSortByYear(Integer director_id);
+
+    Collection<Film> findFilmsOfDirectorSortByLikes(Integer director_id);
 }
