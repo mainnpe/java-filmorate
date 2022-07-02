@@ -3,10 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
@@ -20,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -73,8 +72,7 @@ public class FilmService {
     }
 
     public void like(Integer id, Integer userId)
-            throws UserNotFoundException, FilmNotFoundException
-    {
+            throws UserNotFoundException, FilmNotFoundException {
         FilmValidators.isExists(filmStorage, id,
                 String.format("Фильм с id = %s не существует.", id), log);
         UserValidators.isExists(userStorage, userId, String.format(
@@ -91,8 +89,7 @@ public class FilmService {
     }
 
     public void disLike(Integer id, Integer userId)
-            throws FilmNotFoundException, UserNotFoundException
-    {
+            throws FilmNotFoundException, UserNotFoundException {
         FilmValidators.isExists(filmStorage, id, String.format(
                 "Фильм с id = %s не существует.", id), log);
         UserValidators.isExists(userStorage, userId, String.format(
@@ -132,7 +129,7 @@ public class FilmService {
         return mpaRatingStorage.findAllRatings();
     }
 
-    public Collection<Film> findCommonFilmsByUsersIds(int userId,int friendId) throws UserNotFoundException {
+    public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId) throws UserNotFoundException {
         UserValidators.isExists(userStorage, userId, String.format(
                 "Пользователь с id = %s не существует.", userId), log);
         UserValidators.isExists(userStorage, friendId, String.format(
@@ -140,16 +137,31 @@ public class FilmService {
         return filmStorage.findCommonFilmsByUsersIds(userId, friendId);
     }
 
-    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count,int genreId,int year)
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year)
             throws GenreNotFoundException, ValidationException {
-        if(genreId != -1) {
+        if (genreId != -1) {
             FilmValidators.isGenreExists(genreStorage, genreId, String.format(
                     "Жанр фильма с id = %s не существует.", genreId), log);
         }
-        if(year < FilmValidators.EARLIEST_RELEASE_DATE.getYear() && year != -1) {
+        if (year < FilmValidators.EARLIEST_RELEASE_DATE.getYear() && year != -1) {
             throw new ValidationException("В этот год кино еще не снимали");
         }
         return filmStorage.findMostPopularFilmsByGenreAndYear(count, genreId, year);
+    }
+
+    public Collection<Film> searchFilm(String query, String fields) {
+        Collection<Film> result = new ArrayList<>();
+        for (String field : fields.split(",")) {
+            Collection<Film> foundData;
+            switch (field) {
+                case "title":
+                    foundData = filmStorage.searchByName(query);
+                    if (foundData != null) {
+                        result.addAll(foundData);
+                    }
+            }
+        }
+        return result;
     }
 
 }

@@ -12,8 +12,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.constraints.Positive;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
 
 @RestController
 @Slf4j
@@ -57,39 +56,45 @@ public class FilmController {
     @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
-            throws UserNotFoundException, FilmNotFoundException
-    {
+            throws UserNotFoundException, FilmNotFoundException {
         filmService.like(id, userId);
     }
 
     //DELETE /films/{id}/like/{userId}
     @DeleteMapping("/{id}/like/{userId}")
     public void disLikeFilm(@PathVariable Integer id,
-                         @PathVariable Integer userId)
-            throws FilmNotFoundException, UserNotFoundException
-    {
+                            @PathVariable Integer userId)
+            throws FilmNotFoundException, UserNotFoundException {
         filmService.disLike(id, userId);
     }
 
 
     @GetMapping(value = "/popular")
-    public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (
+    public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear(
             @Positive
-            @RequestParam(name="count", defaultValue = "10") int count,
-            @RequestParam(name="genreId", defaultValue = "-1") int genreId,
-            @RequestParam(name="year", defaultValue = "-1") int year)
-        throws GenreNotFoundException, ValidationException {
+            @RequestParam(name = "count", defaultValue = "10") int count,
+            @RequestParam(name = "genreId", defaultValue = "-1") int genreId,
+            @RequestParam(name = "year", defaultValue = "-1") int year)
+            throws GenreNotFoundException, ValidationException {
         return ResponseEntity.ok(filmService.findMostPopularFilmsByGenreAndYear(count, genreId, year));
     }
 
     @GetMapping(value = "/common")
-    public ResponseEntity<Collection<Film>> findCommonFilmsByUsersIds (
+    public ResponseEntity<Collection<Film>> findCommonFilmsByUsersIds(
             @Positive
             @RequestParam(name = "userId") int userId,
             @Positive
             @RequestParam(name = "friendId") int friendId
     ) throws UserNotFoundException {
         return ResponseEntity.ok(filmService.findCommonFilmsByUsersIds(userId, friendId));
+    }
+
+    @GetMapping(value = "/search")
+    public ResponseEntity<Collection<Film>> searchFilmsByQuery(
+            @RequestParam(name = "query") String query,
+            @RequestParam(name = "by") String by)
+            throws GenreNotFoundException, ValidationException {
+        return ResponseEntity.ok(filmService.searchFilm(query, by));
     }
 
 }

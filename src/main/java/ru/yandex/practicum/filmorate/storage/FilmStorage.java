@@ -32,4 +32,5 @@ public interface FilmStorage {
 
     Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId);
 
+    Collection<Film> searchByName(String query);
 }

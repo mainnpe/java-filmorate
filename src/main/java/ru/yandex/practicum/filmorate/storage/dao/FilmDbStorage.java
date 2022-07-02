@@ -224,6 +224,13 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    public Collection<Film> searchByName(String query) {
+        String sql = "SELECT * " +
+                "FROM films " +
+                "WHERE name LIKE '?*'";
+        return jdbcTemplate.query(sql.toString(), this::makeFilm, query);
+    }
+
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         int id = rs.getInt("id");
         String name = rs.getString("name");
