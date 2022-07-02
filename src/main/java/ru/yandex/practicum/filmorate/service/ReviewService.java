@@ -8,6 +8,9 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.service.validator.ReviewValidator;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
@@ -25,6 +28,7 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final EventManager eventManager;
 
     public Review create(Review review) throws ValidationException, NotFoundException {
         if (!ReviewValidator.validateFormat(review)) {
@@ -40,6 +44,14 @@ public class ReviewService {
         Review save = reviewStorage.save(review);
 
         log.info("Отзыв {} сохранен", save);
+
+        eventManager.register(new UserEvent(
+                save.getUserId(),
+                save.getId(),
+                UserEventType.REVIEW,
+                UserOperation.ADD
+        ));
+
         return save;
     }
 
@@ -63,13 +75,31 @@ public class ReviewService {
     }
 
     public void update(Review review) {
-        reviewStorage.update(review);
-        log.info("Отзыв {} обновлен", review);
+        if(reviewStorage.update(review) == 1) {
+            log.info("Отзыв {} обновлен", review);
+
+            Review byId = reviewStorage.findById(review.getId());
+
+            eventManager.register(new UserEvent(
+                    byId.getUserId(),
+                    byId.getId(),
+                    UserEventType.REVIEW,
+                    UserOperation.UPDATE
+            ));
+        }
     }
 
     public void deleteById(Integer id) {
+        Review review = reviewStorage.findById(id);
         if (reviewStorage.deleteById(id)) {
             log.info("Отзыв с id {} удален", id);
+
+            eventManager.register(new UserEvent(
+                    review.getUserId(),
+                    review.getId(),
+                    UserEventType.REVIEW,
+                    UserOperation.REMOVE
+            ));
         } else {
             log.info("Отзыв с id {} не удален", id);
         }
@@ -77,12 +107,12 @@ public class ReviewService {
 
     public void addLike(Integer id, Integer userId) {
         reviewStorage.addLike(userId, id, 1);
-        log.info("Добавлен дислайк пользователем с id {} к отзыву с id {}", userId, id);
+        log.info("Добавлен лайк пользователем с id {} к отзыву с id {}", userId, id);
     }
 
     public void addDislike(Integer id, Integer userId) {
         reviewStorage.addLike(userId, id, -1);
-        log.info("Добавлен лайк пользователем с id {} к отзыву с id {}", userId, id);
+        log.info("Добавлен дизлайк пользователем с id {} к отзыву с id {}", userId, id);
     }
 
     public void removeLike(Integer id, Integer userId) {
@@ -92,6 +122,6 @@ public class ReviewService {
 
     public void removeDislike(Integer id, Integer userId) {
         reviewStorage.removeLike(userId, id, -1);
-        log.info("Удален дислайк пользователем с id {} у отзыву с id {}", userId, id);
+        log.info("Удален дизлайк пользователем с id {} у отзыву с id {}", userId, id);
     }
 }
