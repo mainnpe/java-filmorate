@@ -68,6 +68,13 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
+    //DELETE /films/{filmId}
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable Integer id)
+            throws FilmNotFoundException
+    {
+        filmService.deleteFilm(id);
+    }
 
     @GetMapping(value = "/popular")
     public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear(

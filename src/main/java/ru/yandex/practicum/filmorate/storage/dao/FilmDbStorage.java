@@ -113,6 +113,11 @@ public class FilmDbStorage implements FilmStorage {
         return null;
     }
 
+    public void deleteFilm(int id){
+        String sql = "delete from films  where id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
     public void like(Integer id, Integer userId) {
         String sql = "insert into film_likes values (?,?)";
         jdbcTemplate.update(sql, id, userId);

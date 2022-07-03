@@ -74,15 +74,20 @@ public class InMemoryFilmStorage implements FilmStorage{
     }
 
     @Override
+    public void deleteFilm(int id) {
+
+    }
+
+    @Override
     public Map<Integer, List<Integer>> getAllFilmsLikes() {
         return null;
     }
-    
+
     @Override
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
         return null;
     }
-    
+
     @Override
     public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId) {
 

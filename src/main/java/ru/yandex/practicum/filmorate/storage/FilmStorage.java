@@ -25,6 +25,7 @@ public interface FilmStorage {
 
     Collection<Film> findNMostPopularFilms(Optional<Integer> count);
 
+    void deleteFilm(int id);
 
     Map<Integer, List<Integer>> getAllFilmsLikes();
 
