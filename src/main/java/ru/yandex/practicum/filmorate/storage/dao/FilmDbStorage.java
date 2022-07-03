@@ -224,11 +224,17 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    @Override
     public Collection<Film> searchByName(String query) {
         String sql = "SELECT * " +
                 "FROM films " +
                 "WHERE name LIKE '?*'";
         return jdbcTemplate.query(sql.toString(), this::makeFilm, query);
+    }
+
+    @Override
+    public Collection<Film> searchByDirector(String query) {
+        return null;
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

@@ -159,6 +159,13 @@ public class FilmService {
                     if (foundData != null) {
                         result.addAll(foundData);
                     }
+                    break;
+                case "director":
+                    foundData = filmStorage.searchByDirector(query);
+                    if (foundData != null) {
+                        result.addAll(foundData);
+                    }
+                    break;
             }
         }
         return result;
