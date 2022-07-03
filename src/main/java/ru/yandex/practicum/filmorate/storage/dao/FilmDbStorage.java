@@ -34,14 +34,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAllFilms() {
-        String sql = "select * from films order by id";
+        String sql = "SELECT * FROM films ORDER BY id";
         return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     @Override
     public Film findFilm(Integer id) {
         try {
-            String sql = "select * from films where id = ?";
+            String sql = "SELECT * FROM films WHERE id = ?";
             return jdbcTemplate.queryForObject(sql, this::makeFilm, id);
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -50,9 +50,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        String sql = "insert into films (name, description, release_date, " +
+        String sql = "INSERT INTO films (name, description, release_date, " +
                 "duration, mpa_rating_id) " +
-                "values (?,?,?,?,?)";
+                "VALUES (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         //add general film info
@@ -79,8 +79,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         Film initFilm = findFilm(film.getId());
-        String sql = "update films set name = ?, description = ?, release_date = ?," +
-                "duration = ?, mpa_rating_id = ? where id = ?";
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?," +
+                "duration = ?, mpa_rating_id = ? WHERE id = ?";
         // update general film info
         int rows = jdbcTemplate.update(sql,
                 film.getName(),
@@ -107,55 +107,55 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public void like(Integer id, Integer userId) {
-        String sql = "insert into film_likes values (?,?)";
+        String sql = "INSERT INTO film_likes VALUES (?,?)";
         jdbcTemplate.update(sql, id, userId);
         updateRate(id, 1); // increase film rate by 1
     }
 
     public void disLike(Integer id, Integer userId) {
-        String sql = "delete from film_likes " +
-                "where film_id = ? and user_id = ?";
+        String sql = "DELETE FROM film_likes " +
+                "WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, id, userId);
         updateRate(id, -1); // decrease film rate by 1
     }
 
     //Increase or decrease rate by rateDiff (like/dislike)
     private void updateRate(Integer id, Integer rateDiff) {
-        String sql = "update films set rate = rate + ? where id = ?";
+        String sql = "UPDATE films SET rate = rate + ? WHERE id = ?";
         jdbcTemplate.update(sql, rateDiff, id);
     }
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
-        String sql = "select * from films order by rate desc limit ?";
+        String sql = "SELECT * FROM films ORDER BY rate DESC limit ?";
         return jdbcTemplate.query(sql, this::makeFilm, count.orElse(10));
     }
 
     @Override
     public Collection<Film> findFilmsOfDirectorSortByYear(Integer id) {
-        String sql = "select F2.ID, " +
-                "F2.NAME, " +
-                "F2.DESCRIPTION, " +
-                "F2.RELEASE_DATE, " +
-                "F2.DURATION, " +
-                "F2.MPA_RATING_ID " +
-                "from DIRECTOR_REL " +
-                "JOIN FILMS F2 on DIRECTOR_REL.FILM_ID = F2.ID " +
-                "where DIRECTOR_REL.ID = ? order by release_date";
+        String sql = "SELECT f2.id, " +
+                "f2.name, " +
+                "f2.description, " +
+                "f2.release_date, " +
+                "f2.duration, " +
+                "f2.mpa_rating_id " +
+                "FROM DIRECTOR_REL " +
+                "JOIN films f2 ON director_rel.film_id = f2.id " +
+                "WHERE director_rel.id = ? ORDER BY release_date";
 
         return jdbcTemplate.query(sql, this::makeFilm, id);
     }
 
     @Override
     public Collection<Film> findFilmsOfDirectorSortByLikes(Integer id) {
-        String sql = "select F2.ID, " +
-                "F2.NAME, " +
-                "F2.DESCRIPTION, " +
-                "F2.RELEASE_DATE, " +
-                "F2.DURATION, " +
-                "F2.MPA_RATING_ID " +
-                "from DIRECTOR_REL " +
-                "JOIN FILMS F2 on DIRECTOR_REL.FILM_ID = F2.ID " +
-                "where DIRECTOR_REL.ID = ? order by rate";
+        String sql = "SELECT f2.id, " +
+                "f2.name, " +
+                "f2.description, " +
+                "f2.release_date, " +
+                "f2.duration, " +
+                "f2.mpa_rating_id " +
+                "FROM director_rel " +
+                "JOIN films f2 ON director_rel.film_id = f2.id " +
+                "WHERE director_rel.id = ? ORDER BY rate";
 
         return jdbcTemplate.query(sql, this::makeFilm, id);
     }

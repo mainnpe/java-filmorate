@@ -25,8 +25,7 @@ public class DirectorDao {
 
     public Director findDirector(Integer id) {
         try {
-            String sql = "" +
-                    "select * from director where id = ?";
+            String sql = "SELECT * FROM director WHERE id = ?";
             return jdbcTemplate.queryForObject(sql, this::makeDirector, id);
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -34,12 +33,12 @@ public class DirectorDao {
     }
 
     public Collection<Director> findAllDirector() {
-        String sql = "select * from director";
+        String sql = "SELECT * FROM director";
         return jdbcTemplate.query(sql, this::makeDirector);
     }
 
     public Director addDirector(Director director) {
-        String sql = "insert into director (director_name) values (?)";
+        String sql = "INSERT INTO director (director_name) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         int rows = jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
@@ -53,7 +52,7 @@ public class DirectorDao {
         return null;
     }
     public Director updateDirector(Director director) {
-        String sql = "update director set director_name = ? where id = ?";
+        String sql = "UPDATE director SET director_name = ? WHERE id = ?";
         jdbcTemplate.update(sql, director.getName(), director.getId());
         return director;
     }
@@ -62,17 +61,17 @@ public class DirectorDao {
         Set<Director> directors = film.getDirectors();
 
         if (!(directors == null || directors.isEmpty())) {
-            String sqlQuery = "insert into director_rel values (?,?)";
+            String sqlQuery = "INSERT INTO director_rel VALUES (?,?)";
             directors.stream().forEach(x ->
                     jdbcTemplate.update(sqlQuery, film.getId(), x.getId()));
         }
     }
 
     public Collection<Director> findFilmDirectors(Integer id) {
-        String sql = "select director_rel.id, director.director_name " +
-                "from director_rel " +
-                "join director on director.id = director_rel.id " +
-                "where film_id = ?";
+        String sql = "SELECT director_rel.id, director.director_name " +
+                "FROM director_rel " +
+                "JOIN director ON director.id = director_rel.id " +
+                "WHERE film_id = ?";
 
         return jdbcTemplate.query(sql, this::makeDirector, id);
     }
@@ -88,17 +87,17 @@ public class DirectorDao {
     }
 
     public void deleteFilmDirectors(Film film) {
-        String sql = "delete from director_rel where film_id = ?";
+        String sql = "DELETE FROM director_rel WHERE film_id = ?";
         jdbcTemplate.update(sql, film.getId());
     }
 
     public void deleteDirectorsFromFilm(Integer id) {
-        String sql = "delete from director_rel where id = ?";
+        String sql = "DELETE FROM director_rel WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
     public void deleteDirectors(Integer id) {
-        String sql = "delete from director where id = ?";
+        String sql = "DELETE FROM director WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
