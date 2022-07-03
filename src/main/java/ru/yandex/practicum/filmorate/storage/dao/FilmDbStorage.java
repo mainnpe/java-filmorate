@@ -228,8 +228,8 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> searchByName(String query) {
         String sql = "SELECT * " +
                 "FROM films " +
-                "WHERE name LIKE '?*'";
-        return jdbcTemplate.query(sql.toString(), this::makeFilm, query);
+                "WHERE name LIKE '%" + query + "%'";
+        return jdbcTemplate.query(sql.toString(), this::makeFilm);
     }
 
     @Override
