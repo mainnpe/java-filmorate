@@ -1,4 +1,6 @@
 -- DROP TABLES
+DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, director, director_rel, user_events, reviews, review_scores;
+
 DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, director, director_rel, film_genres;
 -- create tables
 CREATE TABLE IF NOT EXISTS users
@@ -60,6 +62,37 @@ CREATE TABLE IF NOT EXISTS film_genre_rel
     film_id INTEGER REFERENCES films,
     genre_id INTEGER REFERENCES film_genres,
     CONSTRAINT fgr_pk PRIMARY KEY (film_id, genre_id)
+);
+
+
+CREATE TABLE IF NOT EXISTS user_events
+(
+    event_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+    entity_id INTEGER,
+    user_id INTEGER,
+    event_type VARCHAR(64),
+    user_operation VARCHAR(64),
+    cdate TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS uevents ON user_events (event_id, entity_id, user_id);
+ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id);
+
+CREATE TABLE IF NOT EXISTS reviews
+(
+    id INTEGER AUTO_INCREMENT(1) PRIMARY KEY,
+    film_id INTEGER REFERENCES films,
+    user_id INTEGER REFERENCES users,
+    is_positive BOOLEAN,
+    content VARCHAR(200)
+);
+
+CREATE TABLE IF NOT EXISTS review_scores
+(
+    review_id INTEGER REFERENCES reviews,
+    user_id INTEGER REFERENCES users,
+    score INTEGER,
+    PRIMARY KEY (review_id, user_id, score)
 );
 
 CREATE TABLE IF NOT EXISTS director

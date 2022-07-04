@@ -32,6 +32,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public Collection<Film> findFilms(List<Integer> ids) {
+        return null;
+    }
+
+    @Override
     public Film addFilm(Film film) {
         film.setId(filmUniqueId++);
         films.put(film.getId(), film);
@@ -116,5 +121,21 @@ public class InMemoryFilmStorage implements FilmStorage {
             }
         }
         return filmsDirector;
+    }
+
+    @Override
+    public Map<Integer, List<Integer>> getAllFilmsLikes() {
+        return null;
+    }
+    
+    @Override
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
+        return null;
+    }
+    
+    @Override
+    public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId) {
+
+        return null;
     }
 }

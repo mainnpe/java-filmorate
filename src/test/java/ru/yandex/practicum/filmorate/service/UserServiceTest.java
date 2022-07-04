@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.utils.CollaborativeFiltering.recommendItems;
 
 class UserServiceTest {
     UserService service;
@@ -18,7 +20,10 @@ class UserServiceTest {
     @BeforeEach
     void beforeEach() {
         service = new UserService(
-                new InMemoryUserStorage()
+                new InMemoryUserStorage(),
+                new InMemoryFilmStorage(),
+                new EventManager()
+
         );
     }
 
@@ -259,6 +264,33 @@ class UserServiceTest {
                 () -> assertEquals(expCommonFriends, new HashSet<>(commonFriends),
                         "Отличается состав общих друзей")
         );
+    }
+
+    @Test
+    void test8_recommendItems() {
+        //Given
+        List<Integer> userItems1 = List.of(1,2,3,4);
+        List<Integer> userItems2 = List.of(2,3);
+        List<Integer> userItems3 = List.of(1,5,3,10);
+        Map<Integer, List<Integer>> data = Map.of(
+                1, userItems1,
+                2, userItems2,
+                3, userItems3
+        );
+
+        //When
+        List<Integer> recommendedItems1 = recommendItems(data, 2);
+        List<Integer> recommendedItems2 = recommendItems(data, 3);
+
+
+        //Then
+        List<Integer> expectedList1 = List.of(1,4);
+        List<Integer> expectedList2 = List.of(2,4);
+
+        assertEquals(expectedList1, recommendedItems1,
+                "incorrect list of recommendations case1");
+        assertEquals(expectedList2, recommendedItems2,
+                "incorrect list of recommendations case2");
     }
 
 }

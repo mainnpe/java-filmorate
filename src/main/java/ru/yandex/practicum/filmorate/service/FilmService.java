@@ -2,12 +2,18 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
 import ru.yandex.practicum.filmorate.service.validator.DirectorValidators;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
@@ -28,8 +34,9 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmGenreDao genreStorage;
     private final MPARatingDao mpaRatingStorage;
-    private final DirectorDao directorStorage;
 
+    @Autowired
+    private final EventManager eventManager;
 
     public FilmStorage getFilmStorage() {
         return filmStorage;
@@ -77,6 +84,13 @@ public class FilmService {
                 "Пользователь с id = %s не существует.", userId), log);
 
         filmStorage.like(id, userId);
+
+        eventManager.register(new UserEvent(
+                userId,
+                id,
+                UserEventType.LIKE,
+                UserOperation.ADD
+        ));
     }
 
     public void disLike(Integer id, Integer userId)
@@ -88,6 +102,13 @@ public class FilmService {
                 "Пользователь с id = %s не существует.", userId), log);
 
         filmStorage.disLike(id, userId);
+
+        eventManager.register(new UserEvent(
+                userId,
+                id,
+                UserEventType.LIKE,
+                UserOperation.REMOVE
+        ));
     }
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
@@ -114,6 +135,27 @@ public class FilmService {
         return mpaRatingStorage.findAllRatings();
     }
 
+    public Collection<Film> findCommonFilmsByUsersIds(int userId,int friendId) throws UserNotFoundException {
+        UserValidators.isExists(userStorage, userId, String.format(
+                "Пользователь с id = %s не существует.", userId), log);
+        UserValidators.isExists(userStorage, friendId, String.format(
+                "Пользователь с id = %s не существует.", userId), log);
+        return filmStorage.findCommonFilmsByUsersIds(userId, friendId);
+    }
+
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count,int genreId,int year)
+            throws GenreNotFoundException, ValidationException {
+        if(genreId != -1) {
+            FilmValidators.isGenreExists(genreStorage, genreId, String.format(
+                    "Жанр фильма с id = %s не существует.", genreId), log);
+        }
+        if(year < FilmValidators.EARLIEST_RELEASE_DATE.getYear() && year != -1) {
+            throw new ValidationException("В этот год кино еще не снимали");
+        }
+        return filmStorage.findMostPopularFilmsByGenreAndYear(count, genreId, year);
+    }
+
+}
     public Director findDirector(Integer director_id) throws DirectorNotFoundException {
         DirectorValidators.isDirectorExists(directorStorage, director_id, String.format(
                 "Режиссёр с id = %s не существует.", director_id), log);

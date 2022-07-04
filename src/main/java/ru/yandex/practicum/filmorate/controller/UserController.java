@@ -2,10 +2,17 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+
+import ru.yandex.practicum.filmorate.model.Film;
+
+import ru.yandex.practicum.filmorate.interfaces.EventService;
+
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
@@ -16,6 +23,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final EventService eventManager;
 
     @GetMapping
     public Collection<User> findAllUsers() {
@@ -70,6 +78,20 @@ public class UserController {
             throws UserNotFoundException
     {
         userService.deleteFriend(id, friendId);
+    }
+
+
+    //GET /users/{id}/recommendations
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable Integer id)
+            throws UserNotFoundException {
+        return userService.getRecommendations(id);
+    }
+
+    @GetMapping("{id}/feed")
+    public ResponseEntity<Collection<UserEvent>> getUserEvents(
+            @PathVariable int id){
+        return ResponseEntity.ok(eventManager.getUserEventsById(id));
     }
 
 

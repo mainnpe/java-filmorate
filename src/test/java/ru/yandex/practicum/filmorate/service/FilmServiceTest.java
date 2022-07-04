@@ -33,8 +33,7 @@ class FilmServiceTest {
                 new InMemoryUserStorage(),
                 new FilmGenreDao(new JdbcTemplate()),
                 new MPARatingDao(new JdbcTemplate()),
-                new DirectorDao(new JdbcTemplate())
-        );
+                new EventManager());
     }
 
     //    Требования:
