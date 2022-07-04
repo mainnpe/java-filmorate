@@ -18,6 +18,7 @@ public class Film {
     @NonNull private String description;
     @NonNull private LocalDate releaseDate;
     @NonNull private Integer duration;
+    private Set<Director> directors;
     private Set<Integer> likes;
     @NonNull private MPARating mpa;
     private Set<FilmGenre> genres;
@@ -26,16 +27,16 @@ public class Film {
     @JsonCreator
     public Film(@NonNull String name, @NonNull String description,
                 @NonNull LocalDate releaseDate, @NonNull Integer duration,
-                @NonNull MPARating mpa, Set<FilmGenre> genres)
+                Set<Director> director, @NonNull MPARating mpa, Set<FilmGenre> genres)
     {
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
+        this.directors = director;
         this.likes = new HashSet<>();
         this.mpa = mpa;
         this.genres = genres;
-
     }
 
     public void like(Integer id) {

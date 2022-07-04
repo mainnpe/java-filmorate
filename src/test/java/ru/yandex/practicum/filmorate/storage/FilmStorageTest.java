@@ -1,26 +1,21 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.MPARating;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -31,16 +26,18 @@ class FilmStorageTest {
     private final MPARatingDao mpaRatingDao;
     private final FilmGenreDao filmGenreDao;
     private final UserStorage userStorage;
+    private final DirectorDao directorDao;
 
     @Test
     void test1_addFilm() {
         //Given
         MPARating mpa = mpaRatingDao.findRating(1);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
+        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, mpa, genres);
+                100, director, mpa, genres);
 
 
         //When
@@ -58,6 +55,8 @@ class FilmStorageTest {
                         "duration field incorrect"),
                 () -> assertEquals(film.getMpa(), savedFilm.getMpa(),
                         "MPA field incorrect"),
+                () -> assertEquals(film.getDirectors(), savedFilm.getDirectors(),
+                        "Director field incorrect"),
                 () -> assertEquals(film.getGenres(), savedFilm.getGenres(),
                         "genres field incorrect")
         );
@@ -68,19 +67,21 @@ class FilmStorageTest {
         //Given
         MPARating mpa = mpaRatingDao.findRating(1);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
+        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, mpa, genres);
+                100, director, mpa, genres);
         Film savedFilm = storage.addFilm(film);
 
         //When
         MPARating updMpa = mpaRatingDao.findRating(3);//upd mpa
         Set<FilmGenre> updGenres = new HashSet<>(genres);
+        Set<Director> updDirector = new HashSet<>(directorDao.findAllDirector());
         updGenres.remove(filmGenreDao.findGenre(2)); //upd genres
         Film updFilm = new Film( "UPDfilm1", "UPDfilm description",
                 LocalDate.of(1925, Month.JULY, 13),
-                115, updMpa, updGenres);
+                115, updDirector, updMpa, updGenres);
         updFilm.setId(savedFilm.getId());
         
         Film updatedFilm = storage.updateFilm(updFilm);
@@ -97,6 +98,8 @@ class FilmStorageTest {
                         "duration field incorrect"),
                 () -> assertEquals(updFilm.getMpa(), updatedFilm.getMpa(),
                         "MPA field incorrect"),
+                () -> assertEquals(updFilm.getDirectors(), updatedFilm.getDirectors(),
+                        "Director field incorrect"),
                 () -> assertEquals(updFilm.getGenres(), updatedFilm.getGenres(),
                         "genres field incorrect")
         );
@@ -107,10 +110,11 @@ class FilmStorageTest {
         //Given
         MPARating mpa = mpaRatingDao.findRating(1);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
+        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, mpa, genres);
+                100, director, mpa, genres);
 
         //When
         storage.addFilm(film);
@@ -128,6 +132,8 @@ class FilmStorageTest {
                         "duration field incorrect"),
                 () -> assertEquals(film.getMpa(), savedFilm.getMpa(),
                         "MPA field incorrect"),
+                () -> assertEquals(film.getDirectors(), savedFilm.getDirectors(),
+                        "Director field incorrect"),
                 () -> assertEquals(film.getGenres(), savedFilm.getGenres(),
                         "genres field incorrect")
         );
@@ -140,14 +146,16 @@ class FilmStorageTest {
         MPARating mpa2 = mpaRatingDao.findRating(3);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
         Set<FilmGenre> genres2 = new HashSet<>(genres);
+        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director2 = new HashSet<>(directorDao.findAllDirector());
         genres2.remove(filmGenreDao.findGenre(3));
         
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, mpa, genres);
+                100, director, mpa, genres);
         Film film2 = new Film( "film2", "film description 2",
                 LocalDate.of(1999, Month.JULY, 7),
-                162, mpa2, genres2);
+                162, director2, mpa2, genres2);
 
         //When
         Film savedFilm1 = storage.addFilm(film);
@@ -172,6 +180,8 @@ class FilmStorageTest {
                         "duration field incorrect"),
                 () -> assertEquals(film2.getMpa(), savedFilm2.getMpa(),
                         "MPA field incorrect"),
+                () -> assertEquals(film2.getDirectors(), savedFilm2.getDirectors(),
+                        "Director field incorrect"),
                 () -> assertEquals(film2.getGenres(), savedFilm2.getGenres(),
                         "genres field incorrect")
         );
@@ -189,14 +199,16 @@ class FilmStorageTest {
         MPARating mpa2 = mpaRatingDao.findRating(3);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
         Set<FilmGenre> genres2 = new HashSet<>(genres);
+        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director2 = new HashSet<>(directorDao.findAllDirector());
         genres2.remove(filmGenreDao.findGenre(3));
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, mpa, genres);
+                100, director, mpa, genres);
         Film film2 = new Film( "film2", "film description 2",
                 LocalDate.of(1999, Month.JULY, 7),
-                162, mpa2, genres2);
+                162, director2, mpa2, genres2);
 
         Film savedFilm1 = storage.addFilm(film);
         Film savedFilm2 = storage.addFilm(film2);
@@ -236,14 +248,16 @@ class FilmStorageTest {
         MPARating mpa2 = mpaRatingDao.findRating(3);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
         Set<FilmGenre> genres2 = new HashSet<>(genres);
+        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director2 = new HashSet<>(directorDao.findAllDirector());
         genres2.remove(filmGenreDao.findGenre(3));
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
-                100, mpa, genres);
+                100, director, mpa, genres);
         Film film2 = new Film( "film2", "film description 2",
                 LocalDate.of(1999, Month.JULY, 7),
-                162, mpa2, genres2);
+                162, director2, mpa2, genres2);
 
         Film savedFilm1 = storage.addFilm(film);
         Film savedFilm2 = storage.addFilm(film2);
@@ -270,6 +284,4 @@ class FilmStorageTest {
         );
 
     }
-
-
 }

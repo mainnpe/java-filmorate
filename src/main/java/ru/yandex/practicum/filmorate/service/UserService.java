@@ -30,7 +30,7 @@ public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
-    @Autowired
+    //@Autowired
     private final EventManager eventManager;
 
     public Collection<User> findAllUsers() {

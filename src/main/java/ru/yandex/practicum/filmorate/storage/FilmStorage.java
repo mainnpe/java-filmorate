@@ -32,4 +32,7 @@ public interface FilmStorage {
 
     Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId);
 
+    Collection<Film> findFilmsOfDirectorSortByYear(Integer director_id);
+
+    Collection<Film> findFilmsOfDirectorSortByLikes(Integer director_id);
 }

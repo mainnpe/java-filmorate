@@ -4,15 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.constraints.Positive;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -70,6 +66,16 @@ public class FilmController {
     {
         filmService.disLike(id, userId);
     }
+
+    //films/director/{directorId}?sortBy=[year,likes]
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> findFilmsDirectorSortByYear(@PathVariable Integer directorId,
+                                                        @RequestParam String sortBy)
+            throws DirectorNotFoundException {
+        return filmService.findFilmsOfDirector(directorId, sortBy);
+    }
+
+
 
 
     @GetMapping(value = "/popular")

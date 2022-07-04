@@ -1,6 +1,7 @@
 -- DROP TABLES
-DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, user_events, reviews, review_scores;
+DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, director, director_rel, user_events, reviews, review_scores;
 
+DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, director, director_rel, film_genres;
 -- create tables
 CREATE TABLE IF NOT EXISTS users
 (
@@ -92,4 +93,17 @@ CREATE TABLE IF NOT EXISTS review_scores
     user_id INTEGER REFERENCES users,
     score INTEGER,
     PRIMARY KEY (review_id, user_id, score)
+);
+
+CREATE TABLE IF NOT EXISTS director
+(
+    id INTEGER AUTO_INCREMENT(1) PRIMARY KEY,
+    director_name VARCHAR(64) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS director_rel
+(
+    film_id INTEGER REFERENCES films,
+    id INTEGER REFERENCES director,
+    CONSTRAINT director_rel_pk PRIMARY KEY (film_id, id)
 );

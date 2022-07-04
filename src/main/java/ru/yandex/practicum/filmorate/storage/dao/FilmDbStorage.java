@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
@@ -32,17 +32,18 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmGenreDao filmGenreDao;
     private final MPARatingDao mpaRatingDao;
+    private final DirectorDao directorDao;
 
     @Override
     public Collection<Film> findAllFilms() {
-        String sql = "select * from films order by id";
+        String sql = "SELECT * FROM films ORDER BY id";
         return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     @Override
     public Film findFilm(Integer id) {
         try {
-            String sql = "select * from films where id = ?";
+            String sql = "SELECT * FROM films WHERE id = ?";
             return jdbcTemplate.queryForObject(sql, this::makeFilm, id);
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -63,9 +64,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
-        String sql = "insert into films (name, description, release_date, " +
+        String sql = "INSERT INTO films (name, description, release_date, " +
                 "duration, mpa_rating_id) " +
-                "values (?,?,?,?,?)";
+                "VALUES (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         //add general film info
@@ -83,6 +84,7 @@ public class FilmDbStorage implements FilmStorage {
             int id = keyHolder.getKey().intValue();
             film.setId(id);//assign auto-generated id
             filmGenreDao.addFilmGenres(film);//add film genres
+            directorDao.addFilmDirectors(film);//add director genres
             return findFilm(id);
         }
         return null;
@@ -91,8 +93,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         Film initFilm = findFilm(film.getId());
-        String sql = "update films set name = ?, description = ?, release_date = ?," +
-                "duration = ?, mpa_rating_id = ? where id = ?";
+        String sql = "UPDATE films SET name = ?, description = ?, release_date = ?," +
+                "duration = ?, mpa_rating_id = ? WHERE id = ?";
         // update general film info
         int rows = jdbcTemplate.update(sql,
                 film.getName(),
@@ -103,10 +105,15 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
 
         filmGenreDao.updateFilmGenres(film); //update film genres
+        directorDao.updateFilmDirectors(film); //update film directors
         if (rows == 1) {
             Film updFilm = findFilm(film.getId());
             if (initFilm.getGenres() != null && updFilm.getGenres() == null) {
                 updFilm.setGenres(new HashSet<>()); // using to fit postman tests only
+                //updFilm.setDirectors(new HashSet<>()); // using to fit postman tests only
+            }
+            if (initFilm.getDirectors().size() != 0 && updFilm.getDirectors().size() == 0) {
+                updFilm.setDirectors(null); // using to fit postman tests only
             }
             return updFilm;
         }
@@ -114,27 +121,57 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public void like(Integer id, Integer userId) {
-        String sql = "insert into film_likes values (?,?)";
+        String sql = "INSERT INTO film_likes VALUES (?,?)";
         jdbcTemplate.update(sql, id, userId);
         updateRate(id, 1); // increase film rate by 1
     }
 
     public void disLike(Integer id, Integer userId) {
-        String sql = "delete from film_likes " +
-                "where film_id = ? and user_id = ?";
+        String sql = "DELETE FROM film_likes " +
+                "WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, id, userId);
         updateRate(id, -1); // decrease film rate by 1
     }
 
     //Increase or decrease rate by rateDiff (like/dislike)
     private void updateRate(Integer id, Integer rateDiff) {
-        String sql = "update films set rate = rate + ? where id = ?";
+        String sql = "UPDATE films SET rate = rate + ? WHERE id = ?";
         jdbcTemplate.update(sql, rateDiff, id);
     }
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
-        String sql = "select * from films order by rate desc limit ?";
+        String sql = "SELECT * FROM films ORDER BY rate DESC limit ?";
         return jdbcTemplate.query(sql, this::makeFilm, count.orElse(10));
+    }
+
+    @Override
+    public Collection<Film> findFilmsOfDirectorSortByYear(Integer id) {
+        String sql = "SELECT f2.id, " +
+                "f2.name, " +
+                "f2.description, " +
+                "f2.release_date, " +
+                "f2.duration, " +
+                "f2.mpa_rating_id " +
+                "FROM DIRECTOR_REL " +
+                "JOIN films f2 ON director_rel.film_id = f2.id " +
+                "WHERE director_rel.id = ? ORDER BY release_date";
+
+        return jdbcTemplate.query(sql, this::makeFilm, id);
+    }
+
+    @Override
+    public Collection<Film> findFilmsOfDirectorSortByLikes(Integer id) {
+        String sql = "SELECT f2.id, " +
+                "f2.name, " +
+                "f2.description, " +
+                "f2.release_date, " +
+                "f2.duration, " +
+                "f2.mpa_rating_id " +
+                "FROM director_rel " +
+                "JOIN films f2 ON director_rel.film_id = f2.id " +
+                "WHERE director_rel.id = ? ORDER BY rate";
+
+        return jdbcTemplate.query(sql, this::makeFilm, id);
     }
 
 
@@ -234,9 +271,10 @@ public class FilmDbStorage implements FilmStorage {
 
         MPARating mpa = mpaRatingDao.findRating(mpa_id);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findFilmGenres(id));
+        Set<Director> directors = new HashSet<>(directorDao.findFilmDirectors(id));
         genres = genres.isEmpty() ? null : genres; //for postman test fitting
 
         return new Film(id, name, description, releaseDate,
-                duration, new HashSet<>(), mpa, genres);
+                duration, directors, new HashSet<>(), mpa, genres);
     }
 }

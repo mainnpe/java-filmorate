@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.exception.MPARatingNotFoundException;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -16,7 +14,6 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class AuxController {
     private final FilmService filmService;
-
 
     @GetMapping("/genres")
     public Collection<FilmGenre> findAllGenres() {
@@ -37,5 +34,4 @@ public class AuxController {
     public MPARating findMPARating(@PathVariable Integer id) throws MPARatingNotFoundException {
         return filmService.findRating(id);
     }
-
 }
