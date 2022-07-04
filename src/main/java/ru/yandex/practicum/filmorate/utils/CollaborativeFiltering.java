@@ -17,12 +17,13 @@ public class CollaborativeFiltering {
 
         for (Map.Entry<Integer, List<Integer>> e : data.entrySet()) {
             if(!e.getKey().equals(baseId)) {
+                int k = 0;
                 for(Integer item : e.getValue()) {
-                    int k = 0;
                     if(baseItems.contains(item)) {
                         k++;
                     }
                     if (k > score) {
+                        score = k;
                         similarId = e.getKey();
                     }
                 }

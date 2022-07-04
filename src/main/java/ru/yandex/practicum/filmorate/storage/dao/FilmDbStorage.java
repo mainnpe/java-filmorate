@@ -84,6 +84,7 @@ public class FilmDbStorage implements FilmStorage {
             int id = keyHolder.getKey().intValue();
             film.setId(id);//assign auto-generated id
             filmGenreDao.addFilmGenres(film);//add film genres
+            directorDao.addFilmDirectors(film);//add director genres
             return findFilm(id);
         }
         return null;
