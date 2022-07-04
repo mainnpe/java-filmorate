@@ -3,10 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -34,6 +32,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmGenreDao genreStorage;
     private final MPARatingDao mpaRatingStorage;
+    private final DirectorDao directorStorage;
 
     @Autowired
     private final EventManager eventManager;
@@ -155,7 +154,6 @@ public class FilmService {
         return filmStorage.findMostPopularFilmsByGenreAndYear(count, genreId, year);
     }
 
-}
     public Director findDirector(Integer director_id) throws DirectorNotFoundException {
         DirectorValidators.isDirectorExists(directorStorage, director_id, String.format(
                 "Режиссёр с id = %s не существует.", director_id), log);
