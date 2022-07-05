@@ -79,16 +79,16 @@ ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELET
 CREATE TABLE IF NOT EXISTS reviews
 (
     id INTEGER AUTO_INCREMENT(1) PRIMARY KEY,
-    film_id INTEGER REFERENCES films,
-    user_id INTEGER REFERENCES users,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
     is_positive BOOLEAN,
     content VARCHAR(200)
 );
 
 CREATE TABLE IF NOT EXISTS review_scores
 (
-    review_id INTEGER REFERENCES reviews,
-    user_id INTEGER REFERENCES users,
+    review_id INTEGER REFERENCES reviews ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
     score INTEGER,
     PRIMARY KEY (review_id, user_id, score)
 );
@@ -101,7 +101,10 @@ CREATE TABLE IF NOT EXISTS director
 
 CREATE TABLE IF NOT EXISTS director_rel
 (
-    film_id INTEGER REFERENCES films,
-    id INTEGER REFERENCES director,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
+    id INTEGER REFERENCES director ON DELETE CASCADE,
     CONSTRAINT director_rel_pk PRIMARY KEY (film_id, id)
 );
+
+CREATE INDEX IF NOT EXISTS dir_name ON director (director_name);
+CREATE INDEX IF NOT EXISTS film_title ON films (name);

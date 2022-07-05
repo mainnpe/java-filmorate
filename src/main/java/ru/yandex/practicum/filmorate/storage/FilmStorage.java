@@ -40,4 +40,6 @@ public interface FilmStorage {
     Collection<Film> findFilmsOfDirectorSortByYear(Integer director_id);
 
     Collection<Film> findFilmsOfDirectorSortByLikes(Integer director_id);
+
+    Collection<Film> searchByNameAndDirector(String query);
 }

@@ -270,13 +270,40 @@ public class FilmDbStorage implements FilmStorage {
     public Collection<Film> searchByName(String query) {
         String sql = "SELECT * " +
                 "FROM films " +
-                "WHERE name LIKE '%" + query + "%'";
-        return jdbcTemplate.query(sql.toString(), this::makeFilm);
+                "WHERE LOWER(name) LIKE '%" + query.toLowerCase() + "%' " +
+                "ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     @Override
     public Collection<Film> searchByDirector(String query) {
-        return null;
+        String sql = "SELECT * FROM films " +
+                      "WHERE id in (SELECT dr.film_id " +
+                      "FROM director_rel dr " +
+                      "JOIN director d " +
+                          "ON dr.ID = d.ID " +
+                          "AND LOWER(d.director_name) LIKE " +
+                          "'%" + query.toLowerCase() + "%')" +
+                          " ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm);
+    }
+
+    @Override
+    public Collection<Film> searchByNameAndDirector(String query) {
+        String sql = "SELECT * FROM films " +
+                    "WHERE id in (SELECT dr.film_id " +
+                    "FROM director_rel dr " +
+                    "JOIN director d " +
+                        "ON dr.ID = d.ID " +
+                        "AND LOWER(d.director_name) LIKE " +
+                        "'%" + query.toLowerCase() + "%' " +
+                    "UNION " +
+                    "SELECT id " +
+                    "FROM films " +
+                    "WHERE LOWER(name) LIKE " +
+                     "'%" + query.toLowerCase() + "%') " +
+                    "ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {

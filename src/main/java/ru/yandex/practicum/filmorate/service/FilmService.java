@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.interfaces.EventStorage;
 import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.service.validator.DirectorValidators;
-import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
-import ru.yandex.practicum.filmorate.service.validator.UserValidators;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
+import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
+import ru.yandex.practicum.filmorate.service.validator.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
@@ -19,6 +20,7 @@ import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -157,29 +159,21 @@ public class FilmService {
         return filmStorage.findMostPopularFilmsByGenreAndYear(count, genreId, year);
     }
 
-    public Collection<Film> searchFilm(String query, String fields) {
-        Collection<Film> result = new ArrayList<>();
-        for (String field : fields.split(",")) {
-            Collection<Film> foundData;
-            switch (field) {
-                case "title":
-                    foundData = filmStorage.searchByName(query);
-                    if (foundData != null) {
-                        result.addAll(foundData);
-                    }
-                    break;
-                case "director":
-                    foundData = filmStorage.searchByDirector(query);
-                    if (foundData != null) {
-                        result.addAll(foundData);
-                    }
-                    break;
-            }
+    public Collection<Film> searchFilm(String query, List<String> fields) throws ValidationException {
+        Collection<Film> result;
+        if (fields.size() == 2) {
+            result = filmStorage.searchByNameAndDirector(query);
+        } else if (fields.get(0).equals("title")) {
+            result = filmStorage.searchByName(query);
+        } else if (fields.get(0).equals("director")){
+            result = filmStorage.searchByDirector(query);
+        } else {
+            throw new ValidationException("Некорректные параметры запроса");
         }
         return result;
     }
 
-}
+
     public Director findDirector(Integer director_id) throws DirectorNotFoundException {
         DirectorValidators.isDirectorExists(directorStorage, director_id, String.format(
                 "Режиссёр с id = %s не существует.", director_id), log);

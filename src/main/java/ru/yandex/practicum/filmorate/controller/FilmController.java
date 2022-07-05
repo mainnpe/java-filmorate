@@ -83,9 +83,6 @@ public class FilmController {
         return filmService.findFilmsOfDirector(directorId, sortBy);
     }
 
-
-
-
     @GetMapping(value = "/popular")
     public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (
             @Positive
@@ -109,7 +106,7 @@ public class FilmController {
     @GetMapping(value = "/search")
     public ResponseEntity<Collection<Film>> searchFilmsByQuery(
             @RequestParam(name = "query") String query,
-            @RequestParam(name = "by") String by)
+            @RequestParam(name = "by") List<String> by)
             throws GenreNotFoundException, ValidationException {
         return ResponseEntity.ok(filmService.searchFilm(query, by));
     }
