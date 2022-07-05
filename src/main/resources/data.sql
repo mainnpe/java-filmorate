@@ -19,9 +19,3 @@ VALUES (1, 'Комедия'),
        (4, 'Триллер'),
        (5, 'Ужасы'),
        (6, 'Боевик');
-
---fill film director
---MERGE INTO director
-    --VALUES (1, 'Tarantino'),
-           --(2, 'Bondarchuk'),
-           --(3, 'Mihalcov');

@@ -25,6 +25,7 @@ public interface FilmStorage {
 
     Collection<Film> findNMostPopularFilms(Optional<Integer> count);
 
+    void deleteFilm(int id);
 
     Map<Integer, List<Integer>> getAllFilmsLikes();
 
@@ -32,7 +33,13 @@ public interface FilmStorage {
 
     Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId);
 
+    Collection<Film> searchByName(String query);
+
+    Collection<Film> searchByDirector(String query);
+
     Collection<Film> findFilmsOfDirectorSortByYear(Integer director_id);
 
     Collection<Film> findFilmsOfDirectorSortByLikes(Integer director_id);
+
+    Collection<Film> searchByNameAndDirector(String query);
 }

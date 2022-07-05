@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.constraints.Positive;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -67,6 +68,13 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
+    //DELETE /films/{filmId}
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable Integer id)
+            throws FilmNotFoundException
+    {
+        filmService.deleteFilm(id);
+    }
     //films/director/{directorId}?sortBy=[year,likes]
     @GetMapping("/director/{directorId}")
     public Collection<Film> findFilmsDirectorSortByYear(@PathVariable Integer directorId,
@@ -74,9 +82,6 @@ public class FilmController {
             throws DirectorNotFoundException {
         return filmService.findFilmsOfDirector(directorId, sortBy);
     }
-
-
-
 
     @GetMapping(value = "/popular")
     public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (
@@ -96,6 +101,14 @@ public class FilmController {
             @RequestParam(name = "friendId") int friendId
     ) throws UserNotFoundException {
         return ResponseEntity.ok(filmService.findCommonFilmsByUsersIds(userId, friendId));
+    }
+
+    @GetMapping(value = "/search")
+    public ResponseEntity<Collection<Film>> searchFilmsByQuery(
+            @RequestParam(name = "query") String query,
+            @RequestParam(name = "by") List<String> by)
+            throws GenreNotFoundException, ValidationException {
+        return ResponseEntity.ok(filmService.searchFilm(query, by));
     }
 
 }

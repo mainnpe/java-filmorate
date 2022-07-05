@@ -1,7 +1,6 @@
 -- DROP TABLES
-DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, director, director_rel, user_events, reviews, review_scores;
+DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, user_events, reviews, review_scores, director, director_rel;
 
-DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, director, director_rel, film_genres;
 -- create tables
 CREATE TABLE IF NOT EXISTS users
 (
@@ -37,8 +36,8 @@ CREATE TABLE IF NOT EXISTS films
 
 CREATE TABLE IF NOT EXISTS friends
 (
-    user_id INTEGER REFERENCES users,
-    friend_id INTEGER REFERENCES users,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
+    friend_id INTEGER REFERENCES users ON DELETE CASCADE,
     status BOOLEAN DEFAULT FALSE,
     CONSTRAINT friends_pk PRIMARY KEY (user_id, friend_id),
     CONSTRAINT self_friend CHECK (user_id <> friend_id)
@@ -46,8 +45,8 @@ CREATE TABLE IF NOT EXISTS friends
 
 CREATE TABLE IF NOT EXISTS film_likes
 (
-    film_id INTEGER REFERENCES films,
-    user_id INTEGER REFERENCES users,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
     CONSTRAINT flikes_pk PRIMARY KEY (film_id, user_id)
 );
 
@@ -59,11 +58,10 @@ CREATE TABLE IF NOT EXISTS film_genres
 
 CREATE TABLE IF NOT EXISTS film_genre_rel
 (
-    film_id INTEGER REFERENCES films,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
     genre_id INTEGER REFERENCES film_genres,
     CONSTRAINT fgr_pk PRIMARY KEY (film_id, genre_id)
 );
-
 
 CREATE TABLE IF NOT EXISTS user_events
 (
@@ -76,21 +74,21 @@ CREATE TABLE IF NOT EXISTS user_events
 );
 
 CREATE INDEX IF NOT EXISTS uevents ON user_events (event_id, entity_id, user_id);
-ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id);
+ALTER TABLE user_events ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS reviews
 (
     id INTEGER AUTO_INCREMENT(1) PRIMARY KEY,
-    film_id INTEGER REFERENCES films,
-    user_id INTEGER REFERENCES users,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
     is_positive BOOLEAN,
     content VARCHAR(200)
 );
 
 CREATE TABLE IF NOT EXISTS review_scores
 (
-    review_id INTEGER REFERENCES reviews,
-    user_id INTEGER REFERENCES users,
+    review_id INTEGER REFERENCES reviews ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE,
     score INTEGER,
     PRIMARY KEY (review_id, user_id, score)
 );
@@ -103,7 +101,10 @@ CREATE TABLE IF NOT EXISTS director
 
 CREATE TABLE IF NOT EXISTS director_rel
 (
-    film_id INTEGER REFERENCES films,
-    id INTEGER REFERENCES director,
+    film_id INTEGER REFERENCES films ON DELETE CASCADE,
+    id INTEGER REFERENCES director ON DELETE CASCADE,
     CONSTRAINT director_rel_pk PRIMARY KEY (film_id, id)
 );
+
+CREATE INDEX IF NOT EXISTS dir_name ON director (director_name);
+CREATE INDEX IF NOT EXISTS film_title ON films (name);

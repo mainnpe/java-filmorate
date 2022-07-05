@@ -130,6 +130,11 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    public void deleteUser(int id){
+        String sql = "delete from users where id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
 
 
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {

@@ -120,6 +120,11 @@ public class FilmDbStorage implements FilmStorage {
         return null;
     }
 
+    public void deleteFilm(int id){
+        String sql = "delete from films  where id = ?";
+        jdbcTemplate.update(sql, id);
+    }
+
     public void like(Integer id, Integer userId) {
         String sql = "INSERT INTO film_likes VALUES (?,?)";
         jdbcTemplate.update(sql, id, userId);
@@ -259,6 +264,46 @@ public class FilmDbStorage implements FilmStorage {
             return Collections.emptyList();
         }
 
+    }
+
+    @Override
+    public Collection<Film> searchByName(String query) {
+        String sql = "SELECT * " +
+                "FROM films " +
+                "WHERE LOWER(name) LIKE '%" + query.toLowerCase() + "%' " +
+                "ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm);
+    }
+
+    @Override
+    public Collection<Film> searchByDirector(String query) {
+        String sql = "SELECT * FROM films " +
+                      "WHERE id in (SELECT dr.film_id " +
+                      "FROM director_rel dr " +
+                      "JOIN director d " +
+                          "ON dr.ID = d.ID " +
+                          "AND LOWER(d.director_name) LIKE " +
+                          "'%" + query.toLowerCase() + "%')" +
+                          " ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm);
+    }
+
+    @Override
+    public Collection<Film> searchByNameAndDirector(String query) {
+        String sql = "SELECT * FROM films " +
+                    "WHERE id in (SELECT dr.film_id " +
+                    "FROM director_rel dr " +
+                    "JOIN director d " +
+                        "ON dr.ID = d.ID " +
+                        "AND LOWER(d.director_name) LIKE " +
+                        "'%" + query.toLowerCase() + "%' " +
+                    "UNION " +
+                    "SELECT id " +
+                    "FROM films " +
+                    "WHERE LOWER(name) LIKE " +
+                     "'%" + query.toLowerCase() + "%') " +
+                    "ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
