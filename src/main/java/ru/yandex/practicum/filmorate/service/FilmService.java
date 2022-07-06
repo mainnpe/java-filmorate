@@ -3,25 +3,24 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmGenre;
-import ru.yandex.practicum.filmorate.model.MPARating;
+import ru.yandex.practicum.filmorate.interfaces.EventStorage;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
-import ru.yandex.practicum.filmorate.service.validator.DirectorValidators;
-import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
-import ru.yandex.practicum.filmorate.service.validator.UserValidators;
+import ru.yandex.practicum.filmorate.service.validator.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.DirectorDao;
 import ru.yandex.practicum.filmorate.storage.dao.FilmGenreDao;
 import ru.yandex.practicum.filmorate.storage.dao.MPARatingDao;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -110,6 +109,12 @@ public class FilmService {
         ));
     }
 
+    public void deleteFilm(int id) throws FilmNotFoundException {
+        FilmValidators.isExists(filmStorage, id, String.format(
+                "Фильм с id = %s не существует.", id), log);
+        filmStorage.deleteFilm(id);
+    }
+
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
         return filmStorage.findNMostPopularFilms(count);
     }
@@ -134,7 +139,7 @@ public class FilmService {
         return mpaRatingStorage.findAllRatings();
     }
 
-    public Collection<Film> findCommonFilmsByUsersIds(int userId,int friendId) throws UserNotFoundException {
+    public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId) throws UserNotFoundException {
         UserValidators.isExists(userStorage, userId, String.format(
                 "Пользователь с id = %s не существует.", userId), log);
         UserValidators.isExists(userStorage, friendId, String.format(
@@ -142,17 +147,32 @@ public class FilmService {
         return filmStorage.findCommonFilmsByUsersIds(userId, friendId);
     }
 
-    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count,int genreId,int year)
+    public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year)
             throws GenreNotFoundException, ValidationException {
-        if(genreId != -1) {
+        if (genreId != -1) {
             FilmValidators.isGenreExists(genreStorage, genreId, String.format(
                     "Жанр фильма с id = %s не существует.", genreId), log);
         }
-        if(year < FilmValidators.EARLIEST_RELEASE_DATE.getYear() && year != -1) {
+        if (year < FilmValidators.EARLIEST_RELEASE_DATE.getYear() && year != -1) {
             throw new ValidationException("В этот год кино еще не снимали");
         }
         return filmStorage.findMostPopularFilmsByGenreAndYear(count, genreId, year);
     }
+
+    public Collection<Film> searchFilm(String query, List<String> fields) throws ValidationException {
+        Collection<Film> result;
+        if (fields.size() == 2) {
+            result = filmStorage.searchByNameAndDirector(query);
+        } else if (fields.get(0).equals("title")) {
+            result = filmStorage.searchByName(query);
+        } else if (fields.get(0).equals("director")){
+            result = filmStorage.searchByDirector(query);
+        } else {
+            throw new ValidationException("Некорректные параметры запроса");
+        }
+        return result;
+    }
+
 
     public Director findDirector(Integer director_id) throws DirectorNotFoundException {
         DirectorValidators.isDirectorExists(directorStorage, director_id, String.format(

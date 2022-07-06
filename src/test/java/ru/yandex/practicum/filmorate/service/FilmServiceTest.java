@@ -166,8 +166,8 @@ class FilmServiceTest {
         );
     }
 
-    @Test
-    /*void test4_disLikeFilm() throws ValidationException, FilmNotFoundException,
+    /*@Test
+    void test4_disLikeFilm() throws ValidationException, FilmNotFoundException,
             UserNotFoundException {
         //Given
         Film film = new Film( "film1", "film description",
