@@ -105,5 +105,6 @@ public class DirectorDao {
         Integer id = rs.getInt("id");
         String  name = rs.getString("director_name");
         return new Director(id, name);
+
     }
 }
