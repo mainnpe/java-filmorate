@@ -15,34 +15,29 @@ public class DirectorController {
 
     private final FilmService filmService;
 
-    //GET /directors
     @GetMapping("/directors")
-    public Collection<Director> findAllDirectors() {
+    public Collection<Director> findAll() {
         return filmService.findAllDirectors();
     }
 
-    //GET /directors/{id}
     @GetMapping("/directors/{id}")
-    public Director findDirectorById(@PathVariable Integer id) throws DirectorNotFoundException {
+    public Director findById(@PathVariable Integer id) throws DirectorNotFoundException {
         return filmService.findDirector(id);
     }
 
-    //POST /directors
     @PostMapping("/directors")
-    public Director addDirector(@RequestBody Director director) throws ValidationException {
+    public Director add(@RequestBody Director director) throws ValidationException {
         return filmService.addDirector(director);
     }
 
-    //PUT /directors
     @PutMapping("/directors")
-    public Director updateDirectors(@RequestBody Director director)
+    public Director update(@RequestBody Director director)
             throws ValidationException, DirectorNotFoundException {
         return filmService.updateDirector(director);
     }
 
-    //DELETE /directors/{id}
     @DeleteMapping("/directors/{id}")
-    public void deleteDirectors(@PathVariable Integer id) throws DirectorNotFoundException {
+    public void delete(@PathVariable Integer id) throws DirectorNotFoundException {
         filmService.deleteDirector(id);
     }
 }

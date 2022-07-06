@@ -33,7 +33,7 @@ class FilmStorageTest {
         //Given
         MPARating mpa = mpaRatingDao.findRating(1);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
-        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director = new HashSet<>(directorDao.findAll());
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
@@ -67,7 +67,7 @@ class FilmStorageTest {
         //Given
         MPARating mpa = mpaRatingDao.findRating(1);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
-        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director = new HashSet<>(directorDao.findAll());
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
@@ -77,7 +77,7 @@ class FilmStorageTest {
         //When
         MPARating updMpa = mpaRatingDao.findRating(3);//upd mpa
         Set<FilmGenre> updGenres = new HashSet<>(genres);
-        Set<Director> updDirector = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> updDirector = new HashSet<>(directorDao.findAll());
         updGenres.remove(filmGenreDao.findGenre(2)); //upd genres
         Film updFilm = new Film( "UPDfilm1", "UPDfilm description",
                 LocalDate.of(1925, Month.JULY, 13),
@@ -110,7 +110,7 @@ class FilmStorageTest {
         //Given
         MPARating mpa = mpaRatingDao.findRating(1);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
-        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director = new HashSet<>(directorDao.findAll());
 
         Film film = new Film( "film1", "film description",
                 LocalDate.of(1989, Month.JULY, 7),
@@ -146,8 +146,8 @@ class FilmStorageTest {
         MPARating mpa2 = mpaRatingDao.findRating(3);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
         Set<FilmGenre> genres2 = new HashSet<>(genres);
-        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
-        Set<Director> director2 = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director = new HashSet<>(directorDao.findAll());
+        Set<Director> director2 = new HashSet<>(directorDao.findAll());
         genres2.remove(filmGenreDao.findGenre(3));
         
         Film film = new Film( "film1", "film description",
@@ -199,8 +199,8 @@ class FilmStorageTest {
         MPARating mpa2 = mpaRatingDao.findRating(3);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
         Set<FilmGenre> genres2 = new HashSet<>(genres);
-        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
-        Set<Director> director2 = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director = new HashSet<>(directorDao.findAll());
+        Set<Director> director2 = new HashSet<>(directorDao.findAll());
         genres2.remove(filmGenreDao.findGenre(3));
 
         Film film = new Film( "film1", "film description",
@@ -248,8 +248,8 @@ class FilmStorageTest {
         MPARating mpa2 = mpaRatingDao.findRating(3);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findAllGenres());
         Set<FilmGenre> genres2 = new HashSet<>(genres);
-        Set<Director> director = new HashSet<>(directorDao.findAllDirector());
-        Set<Director> director2 = new HashSet<>(directorDao.findAllDirector());
+        Set<Director> director = new HashSet<>(directorDao.findAll());
+        Set<Director> director2 = new HashSet<>(directorDao.findAll());
         genres2.remove(filmGenreDao.findGenre(3));
 
         Film film = new Film( "film1", "film description",

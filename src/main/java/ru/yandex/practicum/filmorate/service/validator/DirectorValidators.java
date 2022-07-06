@@ -12,7 +12,7 @@ public class DirectorValidators {
 
     public static void isDirectorExists(DirectorDao storage, Integer director_id,
                                         String message, Logger log) throws DirectorNotFoundException {
-        if (storage.findDirector(director_id) == null) {
+        if (storage.find(director_id) == null) {
             log.warn(message);
             throw new DirectorNotFoundException(message);
         }
