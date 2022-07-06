@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
@@ -11,9 +10,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
-import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
-import ru.yandex.practicum.filmorate.service.validator.ReviewValidator;
-import ru.yandex.practicum.filmorate.service.validator.UserValidators;
+import ru.yandex.practicum.filmorate.service.validator.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -29,16 +26,19 @@ public class ReviewService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final EventManager eventManager;
+    private final UserValidators userValidator;
+    private final FilmValidators filmValidator;
+    private final ReviewValidator reviewValidator;
 
     public Review create(Review review) throws ValidationException, NotFoundException {
-        if (!ReviewValidator.validateFormat(review)) {
+        if (!reviewValidator.validateFormat(review)) {
             log.warn("Ошибка при создании отзыва");
             throw new ValidationException("Ошибка при создании отзыва");
         }
 
-        FilmValidators.isExists(filmStorage, review.getFilmId(),
+        filmValidator.isExists(filmStorage, review.getFilmId(),
                 String.format("Фильм с id = %s не существует.", review.getFilmId()), log);
-        UserValidators.isExists(userStorage, review.getUserId(), String.format(
+        userValidator.isExists(userStorage, review.getUserId(), String.format(
                 "Пользователь с id = %s не существует.", review.getUserId()), log);
 
         Review save = reviewStorage.save(review);
@@ -56,7 +56,7 @@ public class ReviewService {
     }
 
     public Review getById(Integer id) throws ReviewNotFoundException {
-        ReviewValidator.isExists(reviewStorage, id, String.format(
+        reviewValidator.isExists(reviewStorage, id, String.format(
                 "Отзыв с id = %s не существует.", id), log);
         Review review = reviewStorage.findById(id);
         log.info("Отзыв с id  {} найден", review);
