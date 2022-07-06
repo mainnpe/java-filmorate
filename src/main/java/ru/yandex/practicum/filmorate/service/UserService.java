@@ -12,8 +12,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
-import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
-import ru.yandex.practicum.filmorate.service.validator.UserValidators;
+import ru.yandex.practicum.filmorate.service.validator.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -31,16 +30,15 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-
-    //@Autowired
     private final EventManager eventManager;
+    private final UserValidators userValidator;
 
     public Collection<User> findAllUsers() {
         return userStorage.findAllUsers();
     }
 
     public User findUser(Integer id) throws UserNotFoundException {
-        UserValidators.isExists(userStorage, id, String.format(
+        userValidator.isExists(userStorage, id, String.format(
                     "Пользователь с id = %s не существует.", id), log);
 
         return userStorage.findUser(id);
@@ -48,7 +46,7 @@ public class UserService {
 
 
     public User addUser(User user) throws ValidationException {
-        if (!UserValidators.validateFormat(user)) {
+        if (!userValidator.validateFormat(user)) {
             log.warn("Ошибка при создании пользователя");
             throw new ValidationException("Ошибка при создании пользователя");
         }
@@ -56,12 +54,12 @@ public class UserService {
     }
 
     public User updateUser(User user) throws ValidationException, UserNotFoundException {
-        if (!UserValidators.validateFormat(user)) {
+        if (!userValidator.validateFormat(user)) {
             log.warn("Ошибка при обновлении пользователя");
             throw new ValidationException("Ошибка при обновлении информации " +
                     "о пользователе.");
         }
-        UserValidators.isExists(userStorage, user.getId(), String.format(
+        userValidator.isExists(userStorage, user.getId(), String.format(
                 "Пользователь с id = %s не существует.", user.getId()), log);
 
         return userStorage.updateUser(user);
@@ -69,9 +67,9 @@ public class UserService {
 
     public void addFriend(Integer id, Integer otherId) throws UserNotFoundException {
         // Проверить существование обоих User
-        UserValidators.isExists(userStorage, id, "Невалидный id пользователя, " +
+        userValidator.isExists(userStorage, id, "Невалидный id пользователя, " +
                 "направившего заявку на добавление в друзья.", log);
-        UserValidators.isExists(userStorage, otherId,
+        userValidator.isExists(userStorage, otherId,
                 String.format("Ошибка при добавлении в друзья. Пользователь с id = %s не существует."
                         , otherId), log);
 
@@ -87,10 +85,10 @@ public class UserService {
 
     public void deleteFriend(Integer id, Integer otherId) throws UserNotFoundException {
         // Проверить существование обоих User
-        UserValidators.isExists(userStorage, id,
+        userValidator.isExists(userStorage, id,
                 "Невалидный id пользователя, направившего заявку " +
                         "на удаление из друзей.", log);
-        UserValidators.isExists(userStorage, otherId,
+        userValidator.isExists(userStorage, otherId,
                 String.format("Ошибка при удалении. Пользователь с id = %s не существует."
                         , otherId), log);
 
@@ -105,13 +103,13 @@ public class UserService {
     }
 
     public void deleteUser(int id) throws UserNotFoundException {
-        UserValidators.isExists(userStorage, id, "Невалидный id пользователя, ", log);
+        userValidator.isExists(userStorage, id, "Невалидный id пользователя, ", log);
         userStorage.deleteUser(id);
     }
 
     public Collection<User> findFriends(Integer id) throws UserNotFoundException {
         // Проверить существование User
-        UserValidators.isExists(userStorage, id,
+        userValidator.isExists(userStorage, id,
                 "Пользователь с id = %s не существует.", log);
 
         //Определить список друзей
@@ -120,9 +118,9 @@ public class UserService {
 
     public Collection<User> findCommonFriends(Integer id, Integer otherId) throws UserNotFoundException {
         // Проверить существование обоих User
-        UserValidators.isExists(userStorage, id, String.format(
+        userValidator.isExists(userStorage, id, String.format(
                 "Пользователь с id = %s не существует.", otherId), log);
-        UserValidators.isExists(userStorage, otherId, String.format(
+        userValidator.isExists(userStorage, otherId, String.format(
                 "Пользователь с id = %s не существует.", otherId), log);
 
         //Определить список id общих друзей
@@ -130,7 +128,7 @@ public class UserService {
     }
 
     public Collection<Film> getRecommendations(Integer userId) throws UserNotFoundException {
-        UserValidators.isExists(userStorage, userId, String.format(
+        userValidator.isExists(userStorage, userId, String.format(
                 "Пользователь с id = %s не существует.", userId), log);
 
         Map<Integer,List<Integer>> filmLikes = filmStorage.getAllFilmsLikes();

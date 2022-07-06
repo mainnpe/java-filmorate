@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.constraints.Positive;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -24,21 +23,10 @@ public class FilmController {
         return filmService.findAllFilms();
     }
 
-    //GET .../users/{id}
     @GetMapping("/{id}")
     public Film findFilm(@PathVariable Integer id) throws FilmNotFoundException {
         return filmService.findFilm(id);
     }
-
-    //GET /films/popular?count={count}
-    /*
-    @GetMapping("/popular")
-    public Collection<Film> findNMostPopularFilms(@RequestParam Optional<Integer> count)
-    {
-        return filmService.findNMostPopularFilms(count);
-    }
-
-     */
 
     @PostMapping
     public Film addFilm(@RequestBody Film film) throws ValidationException {
@@ -50,7 +38,6 @@ public class FilmController {
         return filmService.updateFilm(film);
     }
 
-    //PUT /films/{id}/like/{userId}
     @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
@@ -59,7 +46,6 @@ public class FilmController {
         filmService.like(id, userId);
     }
 
-    //DELETE /films/{id}/like/{userId}
     @DeleteMapping("/{id}/like/{userId}")
     public void disLikeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
@@ -68,14 +54,13 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
-    //DELETE /films/{filmId}
     @DeleteMapping("/{id}")
     public void deleteFilm(@PathVariable Integer id)
             throws FilmNotFoundException
     {
         filmService.deleteFilm(id);
     }
-    //films/director/{directorId}?sortBy=[year,likes]
+
     @GetMapping("/director/{directorId}")
     public Collection<Film> findFilmsDirectorSortByYear(@PathVariable Integer directorId,
                                                         @RequestParam String sortBy)
