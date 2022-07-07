@@ -174,10 +174,10 @@ public class FilmService {
     public Director findDirector(Integer director_id) throws DirectorNotFoundException {
         directorValidator.isDirectorExists(directorStorage, director_id, String.format(
                 "Режиссёр с id = %s не существует.", director_id), log);
-        return directorStorage.findDirector(director_id);
+        return directorStorage.find(director_id);
     }
     public Collection<Director> findAllDirectors() {
-        return directorStorage.findAllDirector();
+        return directorStorage.findAll();
     }
 
     public Director addDirector(Director director) throws ValidationException {
@@ -185,7 +185,7 @@ public class FilmService {
             log.warn("Ошибка при создании режиссёра");
             throw new ValidationException("Ошибка при создании режиссёра");
         }
-        return directorStorage.addDirector(director);
+        return directorStorage.add(director);
     }
 
     public Director updateDirector(Director director)
@@ -196,7 +196,7 @@ public class FilmService {
         }
         directorValidator.isDirectorExists(directorStorage, director.getId(), String.format(
                 "Режиссёр с id = %s не существует.", director.getId()), log);
-        return directorStorage.updateDirector(director);
+        return directorStorage.update(director);
     }
 
     public Collection<Film> findFilmsOfDirector(Integer id, String sortBy) throws DirectorNotFoundException {
@@ -213,7 +213,7 @@ public class FilmService {
     public void deleteDirector(Integer director_id) throws DirectorNotFoundException {
         directorValidator.isDirectorExists(directorStorage, director_id, String.format(
                 "Режиссёр с id = %s не существует.", director_id), log);
-        directorStorage.deleteDirectorsFromFilm(director_id);
-        directorStorage.deleteDirectors(director_id);
+        directorStorage.deleteFromFilm(director_id);
+        directorStorage.delete(director_id);
     }
 }

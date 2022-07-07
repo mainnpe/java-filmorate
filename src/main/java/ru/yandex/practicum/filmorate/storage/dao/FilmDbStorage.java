@@ -84,7 +84,7 @@ public class FilmDbStorage implements FilmStorage {
             int id = keyHolder.getKey().intValue();
             film.setId(id);//assign auto-generated id
             filmGenreDao.addFilmGenres(film);//add film genres
-            directorDao.addFilmDirectors(film);//add director genres
+            directorDao.addFilm(film);//add director genres
             return findFilm(id);
         }
         return null;
@@ -105,7 +105,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getId());
 
         filmGenreDao.updateFilmGenres(film); //update film genres
-        directorDao.updateFilmDirectors(film); //update film directors
+        directorDao.updateFilm(film); //update film directors
         if (rows == 1) {
             Film updFilm = findFilm(film.getId());
             if (initFilm.getGenres() != null && updFilm.getGenres() == null) {
@@ -316,7 +316,7 @@ public class FilmDbStorage implements FilmStorage {
 
         MPARating mpa = mpaRatingDao.findRating(mpa_id);
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findFilmGenres(id));
-        Set<Director> directors = new HashSet<>(directorDao.findFilmDirectors(id));
+        Set<Director> directors = new HashSet<>(directorDao.findFilm(id));
         genres = genres.isEmpty() ? null : genres; //for postman test fitting
 
         return new Film(id, name, description, releaseDate,
