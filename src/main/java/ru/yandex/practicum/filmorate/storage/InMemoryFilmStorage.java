@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,7 +89,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public String findDirectorById(Integer director_id) {
         for (Director director : findAllDirector()) {
-            if(director_id.equals(director.getId())) {
+            if (director_id.equals(director.getId())) {
                 return director.getName();
             }
         }
@@ -130,32 +131,85 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Map<Integer, List<Integer>> getAllFilmsLikes() {
-        return null;
+        Map<Integer, List<Integer>> filmsLikes = new HashMap<>();
+        for (Film film : films.values()) {
+            filmsLikes.put(film.getId(), film.getLikes() != null ? List.copyOf(film.getLikes()) : null);
+        }
+        return filmsLikes;
     }
 
     @Override
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
-        return null;
+        Comparator<Film> filmLikesComparator = Comparator.comparing(Film::getLikes, (s1, s2) -> {
+            return s2.size() - s1.size();
+        });
+        TreeSet<Film> popularFilms = new TreeSet<Film>(filmLikesComparator);
+        for (Film film : findAllFilms()) {
+            if (film.getReleaseDate().getYear() == year &&
+                    film.getGenres().stream().map(FilmGenre::getId).collect(Collectors.toList()).contains(genreId)){
+                popularFilms.add(film);
+                if (popularFilms.size() > count) {
+                    popularFilms.pollLast();
+                }
+            }
+        }
+        return popularFilms;
     }
 
     @Override
     public Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId) {
-
-        return null;
+        List<Film> commonFilms = new ArrayList<>();
+        for (Film film : findAllFilms()) {
+            if (film.getLikes().contains(userId) && film.getLikes().contains(friendId)){
+                commonFilms.add(film);
+            }
+        }
+        return commonFilms;
     }
 
     @Override
     public Collection<Film> searchByName(String query) {
-        return null;
+        List<Film> foundFilms = new ArrayList<>();
+        for (Film film : findAllFilms()) {
+            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                foundFilms.add(film);
+            }
+        }
+        return foundFilms;
     }
 
     @Override
     public Collection<Film> searchByDirector(String query) {
-        return null;
+        List<Film> foundFilms = new ArrayList<>();
+        for (Film film : findAllFilms()) {
+            for (String director : film.getDirectors().stream().map(Director::getName).collect(Collectors.toList())) {
+                if (director.toLowerCase().contains(query.toLowerCase())) {
+                    foundFilms.add(film);
+                    break;
+                }
+            }
+        }
+        return foundFilms;
     }
 
     @Override
     public Collection<Film> searchByNameAndDirector(String query) {
-        return null;
+        List<Film> foundFilms = new ArrayList<>();
+        for (Film film : findAllFilms()) {
+            Film foundFilm = null;
+            for (String director : film.getDirectors().stream().map(Director::getName).collect(Collectors.toList())) {
+                if (director.toLowerCase().contains(query.toLowerCase())) {
+                    foundFilm = film;
+                    break;
+                }
+            }
+            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                foundFilm = film;
+            }
+            if (foundFilm != null) {
+                foundFilms.add(foundFilm);
+            }
+        }
+        return foundFilms;
     }
 }
