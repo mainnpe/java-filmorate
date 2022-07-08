@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -71,6 +68,21 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
+    @PutMapping("/{id}/rate/{userId}/{rate}")
+    public void addRate(@PathVariable Integer id,
+                         @PathVariable Integer userId,
+                        @PathVariable Float rate)
+            throws UserNotFoundException, FilmNotFoundException, RateFoundException {
+        filmService.addRate(id, userId, rate);
+    }
+
+    //DELETE /films/{id}/like/{userId}
+    @DeleteMapping("/{id}/rate/{userId}")
+    public void removeRate(@PathVariable Integer id,
+                            @PathVariable Integer userId)
+            throws FilmNotFoundException, UserNotFoundException {
+        filmService.removeRate(id, userId);
+    }
 
     @GetMapping(value = "/popular")
     public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (

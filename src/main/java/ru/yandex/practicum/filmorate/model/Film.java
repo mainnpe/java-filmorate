@@ -21,6 +21,7 @@ public class Film {
     private Set<Integer> likes;
     @NonNull private MPARating mpa;
     private Set<FilmGenre> genres;
+    private Set<Rate> rates;
 
 
     @JsonCreator

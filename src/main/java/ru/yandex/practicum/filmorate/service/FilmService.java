@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.interfaces.EventStorage;
+import ru.yandex.practicum.filmorate.interfaces.RateStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.eventmanager.UserEvent;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserEventType;
 import ru.yandex.practicum.filmorate.model.eventmanager.UserOperation;
 import ru.yandex.practicum.filmorate.service.validator.FilmValidators;
+import ru.yandex.practicum.filmorate.service.validator.RateValidators;
 import ru.yandex.practicum.filmorate.service.validator.UserValidators;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -31,6 +33,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmGenreDao genreStorage;
     private final MPARatingDao mpaRatingStorage;
+    private final RateStorage rateStorage;
 
     @Autowired
     private final EventManager eventManager;
@@ -107,6 +110,31 @@ public class FilmService {
                 UserOperation.REMOVE
         ));
     }
+
+    public void addRate(Integer id, Integer userId, Float rate)
+            throws FilmNotFoundException, UserNotFoundException, RateFoundException
+    {
+        FilmValidators.isExists(filmStorage, id, String.format(
+                "Фильм с id = %s не существует.", id), log);
+        RateValidators.isExists(rateStorage, userId, id, String.format(
+                "Рейтинг фильму с id = %s уже добавлен пользователем", id), log);
+        UserValidators.isExists(userStorage, userId, String.format(
+                "Пользователь с id = %s не существует.", userId), log);
+        rateStorage.addRate(id, userId, rate);
+
+    }
+
+    public void removeRate(Integer id, Integer userId)
+            throws FilmNotFoundException, UserNotFoundException
+    {
+        FilmValidators.isExists(filmStorage, id, String.format(
+                "Фильм с id = %s не существует.", id), log);
+        UserValidators.isExists(userStorage, userId, String.format(
+                "Пользователь с id = %s не существует.", userId), log);
+        rateStorage.removeRate(id, userId);
+
+    }
+
 
     public Collection<Film> findNMostPopularFilms(Optional<Integer> count) {
         return filmStorage.findNMostPopularFilms(count);

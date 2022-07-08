@@ -88,4 +88,10 @@ public class InMemoryFilmStorage implements FilmStorage{
 
         return null;
     }
+
+    @Override
+    public void updateRate(int id, float rate) {
+
+    }
+
 }

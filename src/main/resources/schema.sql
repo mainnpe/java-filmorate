@@ -1,5 +1,7 @@
 -- DROP TABLES
-DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel, mpa_age_ratings, film_genres, user_events, reviews, review_scores;
+DROP TABLE IF EXISTS users, films, friends, film_likes, film_genre_rel,
+    mpa_age_ratings, film_genres, user_events, reviews, review_scores,
+    film_rates;
 
 -- create tables
 CREATE TABLE IF NOT EXISTS users
@@ -27,7 +29,7 @@ CREATE TABLE IF NOT EXISTS films
    description VARCHAR(200),
    release_date DATE NOT NULL,
    duration INTEGER NOT NULL,
-   rate INTEGER NOT NULL DEFAULT 0,
+   rate FLOAT NOT NULL DEFAULT 0,
    mpa_rating_id INTEGER REFERENCES mpa_age_ratings,
     CONSTRAINT name_empty CHECK (name <> ''),
     CONSTRAINT duration_positive CHECK (duration > 0),
@@ -63,7 +65,6 @@ CREATE TABLE IF NOT EXISTS film_genre_rel
     CONSTRAINT fgr_pk PRIMARY KEY (film_id, genre_id)
 );
 
-
 CREATE TABLE IF NOT EXISTS user_events
 (
     event_id INTEGER AUTO_INCREMENT PRIMARY KEY,
@@ -92,4 +93,12 @@ CREATE TABLE IF NOT EXISTS review_scores
     user_id INTEGER REFERENCES users,
     score INTEGER,
     PRIMARY KEY (review_id, user_id, score)
+);
+
+CREATE TABLE IF NOT EXISTS film_rates
+(
+    film_id INTEGER REFERENCES films,
+    user_id INTEGER REFERENCES users,
+    rate FLOAT,
+    CONSTRAINT frates_pk PRIMARY KEY (film_id, user_id)
 );

@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.MPARating;
+import ru.yandex.practicum.filmorate.model.Rate;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.Date;
@@ -32,6 +32,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmGenreDao filmGenreDao;
     private final MPARatingDao mpaRatingDao;
+    private final FilmRatesDao filmRatesDao;
 
     @Override
     public Collection<Film> findAllFilms() {
@@ -116,14 +117,14 @@ public class FilmDbStorage implements FilmStorage {
     public void like(Integer id, Integer userId) {
         String sql = "insert into film_likes values (?,?)";
         jdbcTemplate.update(sql, id, userId);
-        updateRate(id, 1); // increase film rate by 1
+        //updateRate(id, 1); // increase film rate by 1
     }
 
     public void disLike(Integer id, Integer userId) {
         String sql = "delete from film_likes " +
                 "where film_id = ? and user_id = ?";
         jdbcTemplate.update(sql, id, userId);
-        updateRate(id, -1); // decrease film rate by 1
+        //updateRate(id, -1); // decrease film rate by 1
     }
 
     //Increase or decrease rate by rateDiff (like/dislike)
@@ -149,7 +150,7 @@ public class FilmDbStorage implements FilmStorage {
             int userId = rows.getInt("user_id");
             int filmId = rows.getInt("film_id");
 
-            if(!likes.containsKey(userId)) {
+            if (!likes.containsKey(userId)) {
                 likes.put(userId, new ArrayList<>(List.of(filmId)));
             }
             List<Integer> newValue = likes.get(userId);
@@ -159,7 +160,7 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return likes;
-
+    }
 
     @Override
     public Collection<Film> findMostPopularFilmsByGenreAndYear(int count, int genreId, int year) {
@@ -236,7 +237,16 @@ public class FilmDbStorage implements FilmStorage {
         Set<FilmGenre> genres = new HashSet<>(filmGenreDao.findFilmGenres(id));
         genres = genres.isEmpty() ? null : genres; //for postman test fitting
 
+        Set<Rate> rates = new HashSet<>(filmRatesDao.getFilmRates(id));
+        rates = rates.isEmpty() ? null : rates;
+
         return new Film(id, name, description, releaseDate,
-                duration, new HashSet<>(), mpa, genres);
+                duration, new HashSet<>(), mpa, genres, rates);
+    }
+
+    @Override
+    public void updateRate(int id, float rate){
+        String sql = "UPDATE films SET rate = ? WHERE id = ?";
+        jdbcTemplate.update(sql, rate, id);
     }
 }

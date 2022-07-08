@@ -32,4 +32,5 @@ public interface FilmStorage {
 
     Collection<Film> findCommonFilmsByUsersIds(int userId, int friendId);
 
+    void updateRate(int id, float rate);
 }
