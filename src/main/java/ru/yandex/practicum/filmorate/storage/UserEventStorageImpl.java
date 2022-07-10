@@ -20,6 +20,7 @@ public class UserEventStorageImpl implements EventStorage {
             "FROM user_events AS tb1 " +
             "WHERE tb1.user_id = ? ";
 
+
     private final String INSERT_USER_EVENT = "INSERT INTO user_events " +
             "(user_id, entity_id, event_type, user_operation) VALUES (?, ?, ?, ?)";
 

@@ -5,6 +5,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -14,8 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 @Repository
 @Primary
@@ -112,6 +112,7 @@ public class UserDbStorage implements UserStorage {
         updateFriendshipStatus(id, otherId,false);
     }
 
+
     //Change friendship status if the friendship mutual
     //(senderId is friend of recipientId and vice versa)
     private void updateFriendshipStatus(Integer senderId, Integer recipientId, boolean status) {
@@ -133,6 +134,8 @@ public class UserDbStorage implements UserStorage {
         String sql = "delete from users where id = ?";
         jdbcTemplate.update(sql, id);
     }
+
+
 
     private User makeUser(ResultSet rs, int rowNum) throws SQLException {
         Integer id = rs.getInt("id");

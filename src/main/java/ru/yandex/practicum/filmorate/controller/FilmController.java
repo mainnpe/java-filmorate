@@ -2,13 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import javax.validation.constraints.Positive;
 import java.util.*;
 
 @RestController
@@ -23,17 +23,9 @@ public class FilmController {
         return filmService.findAllFilms();
     }
 
-    //GET .../users/{id}
     @GetMapping("/{id}")
     public Film findFilm(@PathVariable Integer id) throws FilmNotFoundException {
         return filmService.findFilm(id);
-    }
-
-    //GET /films/popular?count={count}
-    @GetMapping("/popular")
-    public Collection<Film> findNMostPopularFilms(@RequestParam Optional<Integer> count)
-    {
-        return filmService.findNMostPopularFilms(count);
     }
 
     @PostMapping
@@ -46,7 +38,6 @@ public class FilmController {
         return filmService.updateFilm(film);
     }
 
-    //PUT /films/{id}/like/{userId}
     @PutMapping("/{id}/like/{userId}")
     public void likeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
@@ -55,7 +46,6 @@ public class FilmController {
         filmService.like(id, userId);
     }
 
-    //DELETE /films/{id}/like/{userId}
     @DeleteMapping("/{id}/like/{userId}")
     public void disLikeFilm(@PathVariable Integer id,
                          @PathVariable Integer userId)
@@ -64,12 +54,47 @@ public class FilmController {
         filmService.disLike(id, userId);
     }
 
-    //DELETE /films/{filmId}
     @DeleteMapping("/{id}")
     public void deleteFilm(@PathVariable Integer id)
             throws FilmNotFoundException
     {
         filmService.deleteFilm(id);
     }
+
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> findFilmsDirectorSortByYear(@PathVariable Integer directorId,
+                                                        @RequestParam String sortBy)
+            throws DirectorNotFoundException {
+        return filmService.findFilmsOfDirector(directorId, sortBy);
+    }
+
+    @GetMapping(value = "/popular")
+    public ResponseEntity<Collection<Film>> findMostPopularFilmsByGenreAndYear (
+            @Positive
+            @RequestParam(name="count", defaultValue = "10") int count,
+            @RequestParam(name="genreId", defaultValue = "-1") int genreId,
+            @RequestParam(name="year", defaultValue = "-1") int year)
+        throws GenreNotFoundException, ValidationException {
+        return ResponseEntity.ok(filmService.findMostPopularFilmsByGenreAndYear(count, genreId, year));
+    }
+
+    @GetMapping(value = "/common")
+    public ResponseEntity<Collection<Film>> findCommonFilmsByUsersIds (
+            @Positive
+            @RequestParam(name = "userId") int userId,
+            @Positive
+            @RequestParam(name = "friendId") int friendId
+    ) throws UserNotFoundException {
+        return ResponseEntity.ok(filmService.findCommonFilmsByUsersIds(userId, friendId));
+    }
+
+    @GetMapping(value = "/search")
+    public ResponseEntity<Collection<Film>> searchFilmsByQuery(
+            @RequestParam(name = "query") String query,
+            @RequestParam(name = "by") List<String> by)
+            throws GenreNotFoundException, ValidationException {
+        return ResponseEntity.ok(filmService.searchFilm(query, by));
+    }
+
 }
 

@@ -1,27 +1,40 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.yandex.practicum.filmorate.utils.CollaborativeFiltering.recommendItems;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class UserServiceTest {
-    UserService service;
+    private final UserService service;
 
-    @BeforeEach
-    void beforeEach() {
-        service = new UserService(
-                new InMemoryUserStorage(),
-                new EventManager<>()
-        );
-    }
+//    @BeforeEach
+//    void beforeEach() {
+//        service = new UserService(
+//                new InMemoryUserStorage(),
+//                new InMemoryFilmStorage(),
+//                new EventManager()
+//
+//        );
+//    }
 
     //  Требования:
     //    электронная почта не может быть пустой и должна содержать символ @;
@@ -173,10 +186,10 @@ class UserServiceTest {
         User otherUser = new User(2, "email2@email.com", "login2",
                 "name2", LocalDate.of(2000,2,1)
                 , new HashSet<>());
-        user.addFriend(2);
-        otherUser.addFriend(1);
         service.addUser(user);
         service.addUser(otherUser);
+        service.addFriend(1,2);
+        service.addFriend(2,1);
 
         //When
         service.deleteFriend(user.getId(), otherUser.getId());
@@ -247,6 +260,16 @@ class UserServiceTest {
         service.addUser(user2);
         service.addUser(user3);
         service.addUser(user4);
+        service.addFriend(1,2);
+        service.addFriend(1,3);
+        service.addFriend(1,4);
+        service.addFriend(2,1);
+        service.addFriend(2,3);
+        service.addFriend(2,4);
+        service.addFriend(3,1);
+        service.addFriend(3,2);
+        service.addFriend(4,1);
+        service.addFriend(4,2);
 
         //When
         final Collection<User> commonFriends = service.findCommonFriends(
@@ -261,5 +284,6 @@ class UserServiceTest {
                         "Отличается состав общих друзей")
         );
     }
+
 
 }
